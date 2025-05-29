@@ -1,330 +1,374 @@
 // app/page.tsx
 'use client';
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
 
-const pageVariants = {
-  initial: {
-    opacity: 0,
-    y: 20
-  },
-  animate: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: [0.6, -0.05, 0.01, 0.99]
-    }
-  }
-};
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15
-    }
-  }
-};
-
-const itemVariant = {
-  hidden: { 
-    opacity: 0, 
-    y: 20 
-  },
-  show: { 
-    opacity: 1, 
-    y: 0,
-    transition: { 
-      ease: "easeOut", 
-      duration: 0.6 
-    }
-  }
-};
-
-export default function Home() {
-  const [mounted, setMounted] = useState(false);
+// Modern cursor follower component
+const CursorGlow = () => {
+  const cursorX = useMotionValue(0);
+  const cursorY = useMotionValue(0);
+  
+  const springConfig = { damping: 25, stiffness: 700 };
+  const cursorXSpring = useSpring(cursorX, springConfig);
+  const cursorYSpring = useSpring(cursorY, springConfig);
 
   useEffect(() => {
-    setMounted(true);
+    const moveCursor = (e: MouseEvent) => {
+      cursorX.set(e.clientX - 16);
+      cursorY.set(e.clientY - 16);
+    };
+    window.addEventListener('mousemove', moveCursor);
+    return () => window.removeEventListener('mousemove', moveCursor);
   }, []);
 
-  if (!mounted) {
-    return (
-      <main className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900 text-gray-100">
-        {/* Static content while mounting */}
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-          <div className="absolute inset-0 z-0">
-            <div className="absolute top-20 left-10 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl"></div>
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-r from-purple-900/10 via-transparent to-blue-900/10"></div>
-          </div>
-          
-          <div className="container mx-auto px-4 z-10 text-center">
-            <div className="mb-8">
-              <h1 className="text-7xl md:text-9xl font-black mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-purple-600 tracking-wider">
-                YZ
-              </h1>
-              <h2 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-purple-300 tracking-wide">
-                ROBO
-              </h2>
-            </div>
-          </div>
-        </section>
-      </main>
-    );
-  }
   return (
-    <motion.main 
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900 text-gray-100"
+    <motion.div
+      className="pointer-events-none fixed inset-0 z-30 hidden lg:block"
+      style={{
+        x: cursorXSpring,
+        y: cursorYSpring,
+      }}
     >
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Animated background elements */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-r from-purple-900/10 via-transparent to-blue-900/10"></div>
-        </div>
+      <div className="h-8 w-8 rounded-full bg-white/10 blur-xl" />
+    </motion.div>
+  );
+};
+
+// Noise texture overlay for modern depth
+const NoiseTexture = () => (
+  <div className="pointer-events-none fixed inset-0 z-20 opacity-[0.015]">
+    <svg width="100%" height="100%">
+      <filter id="noise">
+        <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" />
+      </filter>
+      <rect width="100%" height="100%" filter="url(#noise)" />
+    </svg>
+  </div>
+);
+
+// Modern navigation bar
+const Navigation = () => {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        scrolled ? 'bg-black/80 backdrop-blur-xl border-b border-white/5' : ''
+      }`}
+    >
+      <div className="container mx-auto px-6 py-6 flex justify-between items-center">
+        <motion.div 
+          whileHover={{ scale: 1.05 }}
+          className="text-2xl font-bold tracking-tight"
+        >
+          <span className="text-white">YZ</span>
+          <span className="text-gray-400">ROBO</span>
+        </motion.div>
         
-        <div className="container mx-auto px-4 z-10 text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="mb-8"
+        <div className="hidden md:flex items-center space-x-8">
+          {['About', 'Gaming', 'Automotive', 'Projects'].map((item, i) => (
+            <motion.a
+              key={item}
+              href={`#${item.toLowerCase()}`}
+              className="text-gray-400 hover:text-white transition-colors duration-300 text-sm tracking-wide"
+              whileHover={{ y: -2 }}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+            >
+              {item}
+            </motion.a>
+          ))}
+          <motion.a
+            href="/links"
+            className="relative group"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <h1 className="text-7xl md:text-9xl font-black mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-purple-600 tracking-wider">
+            <div className="absolute inset-0 bg-white/20 rounded-full blur-xl group-hover:bg-white/30 transition-all duration-300" />
+            <div className="relative px-6 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 text-white text-sm">
+              Connect
+            </div>
+          </motion.a>
+        </div>
+      </div>
+    </motion.nav>
+  );
+};
+
+// Modern hero section with parallax
+const HeroSection = () => {
+  const { scrollY } = useScroll();
+  const y1 = useTransform(scrollY, [0, 500], [0, 150]);
+  const y2 = useTransform(scrollY, [0, 500], [0, -150]);
+  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
+
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+      {/* Modern gradient background */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-to-b from-gray-900 via-black to-black" />
+        <motion.div
+          style={{ y: y1 }}
+          className="absolute top-0 -left-1/4 w-[150%] h-[150%] bg-gradient-to-br from-purple-900/20 via-transparent to-transparent rounded-full blur-3xl"
+        />
+        <motion.div
+          style={{ y: y2 }}
+          className="absolute bottom-0 -right-1/4 w-[150%] h-[150%] bg-gradient-to-tl from-blue-900/20 via-transparent to-transparent rounded-full blur-3xl"
+        />
+      </div>
+
+      {/* Grid pattern overlay */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%239C92AC%22%20fill-opacity%3D%220.03%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-20" />
+
+      <motion.div 
+        style={{ opacity }}
+        className="container mx-auto px-6 z-10 text-center"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: [0.25, 0.4, 0.25, 1] }}
+        >
+          <motion.h1 
+            className="text-[8rem] md:text-[12rem] font-black leading-[0.8] tracking-tighter mb-4"
+            initial={{ letterSpacing: "0.5em", opacity: 0 }}
+            animate={{ letterSpacing: "-0.05em", opacity: 1 }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
+          >
+            <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
               YZ
-            </h1>
-            <h2 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-purple-300 tracking-wide">
-              ROBO
-            </h2>
-          </motion.div>
+            </span>
+          </motion.h1>
           
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-            className="text-xl md:text-2xl max-w-4xl mx-auto mb-12 text-gray-300 leading-relaxed"
+            transition={{ delay: 0.5, duration: 1 }}
+            className="text-2xl md:text-3xl text-gray-500 font-light tracking-[0.2em] mb-8"
           >
-            Gaming • Automotive • Cooking • Coding
-            <br className="hidden md:block"/>
-            <span className="text-lg md:text-xl text-purple-300 mt-2 block">
-              Always evolving while staying streamlined
-            </span>
+            ROBO
           </motion.p>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.8 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-          >
-            <Link 
-              href="/links"
-              className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold rounded-full transition duration-300 shadow-lg hover:shadow-purple-500/25 hover:scale-105 transform"
-            >
-              <span className="relative z-10">Connect</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full blur opacity-0 group-hover:opacity-75 transition duration-300"></div>
-            </Link>
-            
-            <Link 
-              href="#about"
-              className="px-8 py-4 bg-transparent border-2 border-purple-500 hover:bg-purple-500/20 text-purple-300 hover:text-white font-bold rounded-full transition duration-300 hover:scale-105 transform"
-            >
-              Learn More
-            </Link>
-          </motion.div>
-        </div>
-
-        {/* Scroll indicator */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-gray-400"
-        >
-          <div className="flex flex-col items-center">
-            <span className="text-sm mb-2">Scroll to explore</span>
-            <motion.div
-              animate={{ y: [0, 10, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="w-6 h-10 border-2 border-purple-500 rounded-full flex justify-center"
-            >
-              <div className="w-1 h-3 bg-purple-500 rounded-full mt-2"></div>
-            </motion.div>
-          </div>
         </motion.div>
-      </section>
 
-      {/* About Section */}
-      <section id="about" className="py-24 bg-gradient-to-b from-black to-gray-900">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: "-100px" }}
-          >
-            <motion.h2 
-              variants={itemVariant}
-              className="text-5xl md:text-6xl font-bold mb-16 text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400"
-            >
-              Hey, I'm Robbie
-            </motion.h2>
-            
-            <motion.div 
-              variants={itemVariant}
-              className="grid md:grid-cols-2 gap-12 items-center mb-16"
-            >
-              <div className="space-y-6">
-                <p className="text-xl leading-relaxed text-gray-300">
-                  I bring together my diverse interests in one place. From gaming streams to automotive projects, 
-                  cooking adventures to coding solutions - this is where I share it all.
-                </p>
-                
-                <p className="text-xl leading-relaxed text-gray-300">
-                  I believe in breaking down the walls between different hobbies and interests. 
-                  Whether you're here for gaming content, automotive inspiration, recipes, or tech projects - 
-                  there's something for everyone.
-                </p>
-              </div>
-              
-              <div className="relative">
-                <div className="w-full h-80 bg-gradient-to-br from-purple-600/20 to-blue-600/20 rounded-2xl flex items-center justify-center">
-                  <div className="text-8xl">🤖</div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8, duration: 0.8 }}
+          className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-12 font-light leading-relaxed"
+        >
+          Gaming enthusiast. Automotive engineer. Creative coder.
+          <br />
+          <span className="text-gray-500 text-base">
+            Crafting digital experiences at the intersection of passion and technology.
+          </span>
+        </motion.p>
 
-      {/* Interests Grid Section */}
-      <section className="py-24 bg-gray-900">
-        <div className="container mx-auto px-4">
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-5xl font-bold mb-16 text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400"
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, duration: 0.8 }}
+          className="flex flex-col sm:flex-row gap-6 justify-center items-center"
+        >
+          <motion.a
+            href="#about"
+            className="group relative"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            What I'm Into
-          </motion.h2>
-          
-          <motion.div 
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: "-100px" }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
-          >
-            <InterestCard 
-              title="Gaming" 
-              description="Streaming on Twitch and creating gaming content on YouTube. Come hang out!"
-              icon="🎮" 
-              link="/gaming"
-              gradient="from-green-500 to-blue-500"
-            />
-            
-            <InterestCard 
-              title="Automotive" 
-              description="Cars, motorcycles, and the engineering that makes them tick. Projects and builds."
-              icon="🏍️" 
-              link="/automotive"
-              gradient="from-red-500 to-orange-500"
-            />
-            
-            <InterestCard 
-              title="Cooking" 
-              description="Recipes, techniques, and experimenting in the kitchen. Good food, good times."
-              icon="🍳" 
-              link="/cooking"
-              gradient="from-yellow-500 to-red-500"
-            />
-            
-            <InterestCard 
-              title="Coding" 
-              description="Development projects, web apps, and technical solutions I've built."
-              icon="💻" 
-              link="/portfolio"
-              gradient="from-purple-500 to-pink-500"
-            />
-          </motion.div>
-        </div>
-      </section>
+            <div className="absolute inset-0 bg-white rounded-full blur-xl opacity-20 group-hover:opacity-30 transition-opacity duration-300" />
+            <div className="relative px-8 py-4 bg-white text-black font-medium rounded-full">
+              Explore My Work
+            </div>
+          </motion.a>
 
-      {/* Call to Action Section */}
-      <section className="py-24 bg-gradient-to-r from-purple-900/50 via-black to-blue-900/50">
-        <div className="container mx-auto px-4 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+          <motion.a
+            href="/links"
+            className="relative group"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
-              Let's Connect
-            </h2>
-            
-            <p className="text-xl max-w-2xl mx-auto mb-10 text-gray-300">
-              Follow my streams, check out my latest projects, or just say hi. 
-              I'd love to hear from you!
-            </p>
-            
-            <Link 
-              href="/links"
-              className="group relative inline-flex items-center px-10 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold rounded-full transition duration-300 shadow-lg hover:shadow-purple-500/25 hover:scale-105 transform"
-            >
-              <span className="relative z-10">View All Links</span>
-              <svg className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full blur opacity-0 group-hover:opacity-75 transition duration-300"></div>
-            </Link>
-          </motion.div>
-        </div>
-      </section>
-    </motion.main>
+            <div className="relative px-8 py-4 border border-white/20 text-white font-medium rounded-full backdrop-blur-sm hover:bg-white/5 transition-all duration-300">
+              Connect With Me
+            </div>
+          </motion.a>
+        </motion.div>
+      </motion.div>
+
+      {/* Modern scroll indicator */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.5 }}
+        className="absolute bottom-12 left-1/2 -translate-x-1/2"
+      >
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="w-[1px] h-16 bg-gradient-to-b from-white/50 to-transparent"
+        />
+      </motion.div>
+    </section>
   );
-}
+};
 
-// Interest Card Component
-function InterestCard({ title, description, icon, link, gradient }: {
+// Modern feature card
+interface FeatureCardProps {
   title: string;
   description: string;
   icon: string;
-  link: string;
-  gradient: string;
-}) {
+  delay?: number;
+}
+
+const FeatureCard = ({ title, description, icon, delay = 0 }: FeatureCardProps) => {
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
-    <motion.div 
-      variants={itemVariant}
-      whileHover={{ y: -10, scale: 1.02 }}
-      className="group relative bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 hover:bg-gray-800/70 transition-all duration-300 border border-gray-700/50 hover:border-purple-500/50"
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ delay, duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="relative group"
     >
-      <Link href={link} className="block h-full">
-        <div className={`text-6xl mb-6 p-4 rounded-xl bg-gradient-to-br ${gradient} bg-opacity-20 w-fit`}>
+      <div className="relative h-full p-8 bg-gray-900/50 backdrop-blur-sm rounded-2xl border border-gray-800 hover:border-gray-700 transition-all duration-500">
+        {/* Glow effect */}
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        
+        {/* Icon */}
+        <motion.div
+          animate={{ rotate: isHovered ? 360 : 0 }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+          className="text-5xl mb-6 inline-block"
+        >
           {icon}
-        </div>
-        <h3 className="text-2xl font-bold mb-3 text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-blue-400 transition-all duration-300">
+        </motion.div>
+
+        <h3 className="text-2xl font-bold text-white mb-3 tracking-tight">
           {title}
         </h3>
-        <p className="text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
+        
+        <p className="text-gray-400 leading-relaxed">
           {description}
         </p>
-        
-        {/* Hover effect overlay */}
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-600/10 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-      </Link>
+
+        {/* Corner accent */}
+        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-white/5 to-transparent rounded-bl-2xl rounded-tr-2xl" />
+      </div>
     </motion.div>
+  );
+};
+
+// Main component
+export default function ModernHomepage() {
+  return (
+    <div className="min-h-screen bg-black text-white overflow-x-hidden">
+      <CursorGlow />
+      <NoiseTexture />
+      <Navigation />
+      <HeroSection />
+      
+      {/* Features Section */}
+      <section className="py-32 relative">
+        <div className="container mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                What I Do
+              </span>
+            </h2>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+              Exploring the intersection of technology, creativity, and passion through various mediums.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <FeatureCard
+              title="Gaming"
+              description="Live streaming, gameplay content, and building communities around shared gaming experiences."
+              icon="🎮"
+              delay={0}
+            />
+            <FeatureCard
+              title="Automotive"
+              description="Engineering insights, project builds, and the art of mechanical perfection."
+              icon="🏎️"
+              delay={0.1}
+            />
+            <FeatureCard
+              title="Cooking"
+              description="Culinary experiments, recipe development, and the science behind great food."
+              icon="👨‍🍳"
+              delay={0.2}
+            />
+            <FeatureCard
+              title="Coding"
+              description="Building digital solutions, web applications, and pushing the boundaries of what's possible."
+              icon="⚡"
+              delay={0.3}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-32 relative">
+        <div className="container mx-auto px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="max-w-4xl mx-auto"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold mb-8 tracking-tight">
+              Ready to Connect?
+            </h2>
+            <p className="text-xl text-gray-400 mb-12">
+              Join me on this journey across gaming, tech, and creativity.
+            </p>
+            <motion.a
+              href="/links"
+              className="inline-flex items-center gap-3 group"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="relative">
+                <div className="absolute inset-0 bg-white rounded-full blur-xl opacity-30 group-hover:opacity-40 transition-opacity duration-300" />
+                <div className="relative px-10 py-4 bg-white text-black font-medium rounded-full">
+                  View All Links
+                </div>
+              </div>
+              <motion.svg
+                className="w-5 h-5 text-white"
+                animate={{ x: [0, 5, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </motion.svg>
+            </motion.a>
+          </motion.div>
+        </div>
+      </section>
+    </div>
   );
 }
