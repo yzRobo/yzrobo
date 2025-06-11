@@ -70,12 +70,21 @@ const Navigation = () => {
           whileHover={{ scale: 1.05 }}
           className="text-2xl font-bold tracking-tight"
         >
-          <span className="text-white">YZ</span>
-          <span className="text-gray-400">ROBO</span>
+          <span className="text-gray-400">yz</span>
+          <span className="text-white">Robo</span>
         </motion.div>
         
         <div className="hidden md:flex items-center space-x-8">
-          {['About', 'Gaming', 'Automotive', 'Projects'].map((item, i) => (
+          <motion.a
+            href="/about"
+            className="text-gray-400 hover:text-white transition-colors duration-300 text-sm tracking-wide"
+            whileHover={{ y: -2 }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            About
+          </motion.a>
+          {['Gaming', 'Automotive', 'Projects'].map((item, i) => (
             <motion.a
               key={item}
               href={`#${item.toLowerCase()}`}
@@ -83,7 +92,7 @@ const Navigation = () => {
               whileHover={{ y: -2 }}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
+              transition={{ delay: (i + 1) * 0.1 }}
             >
               {item}
             </motion.a>
@@ -146,7 +155,7 @@ const HeroSection = () => {
             transition={{ duration: 1.5, ease: "easeOut" }}
           >
             <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
-              YZ
+              yzRobo
             </span>
           </motion.h1>
           
@@ -154,9 +163,9 @@ const HeroSection = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 1 }}
-            className="text-2xl md:text-3xl text-gray-500 font-light tracking-[0.2em] mb-8"
+            className="text-lg text-gray-500 font-light tracking-widest mb-8"
           >
-            ROBO
+            GAMING • AUTOMOTIVE • COOKING • CODING
           </motion.p>
         </motion.div>
 
@@ -166,11 +175,7 @@ const HeroSection = () => {
           transition={{ delay: 0.8, duration: 0.8 }}
           className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-12 font-light leading-relaxed"
         >
-          Gaming enthusiast. Automotive engineer. Creative coder.
-          <br />
-          <span className="text-gray-500 text-base">
-            Crafting digital experiences at the intersection of passion and technology.
-          </span>
+          Gaming Enthusiast. Automotive Enjoyer. Buongustaio. Vibe Coder.
         </motion.p>
 
         <motion.div
@@ -180,14 +185,14 @@ const HeroSection = () => {
           className="flex flex-col sm:flex-row gap-6 justify-center items-center"
         >
           <motion.a
-            href="#about"
+            href="/about"
             className="group relative"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
             <div className="absolute inset-0 bg-white rounded-full blur-xl opacity-20 group-hover:opacity-30 transition-opacity duration-300" />
             <div className="relative px-8 py-4 bg-white text-black font-medium rounded-full">
-              Explore My Work
+              Learn More
             </div>
           </motion.a>
 

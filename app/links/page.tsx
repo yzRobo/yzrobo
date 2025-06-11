@@ -37,8 +37,8 @@ const socialLinks = [
   },
   {
     name: 'YouTube Gaming',
-    handle: '@yzrobogaming',
-    url: 'https://youtube.com/@yzrobogaming',
+    handle: '@yzRoboGaming',
+    url: 'https://youtube.com/@yzRoboGaming',
     description: 'Gaming content & tutorials',
     icon: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
@@ -50,8 +50,8 @@ const socialLinks = [
   },
   {
     name: 'YouTube Motorsports',
-    handle: '@yzrobo',
-    url: 'https://youtube.com/@yzrobo',
+    handle: '@yzRobo',
+    url: 'https://youtube.com/@yzRobo',
     description: 'Automotive builds & reviews',
     icon: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
@@ -63,8 +63,8 @@ const socialLinks = [
   },
   {
     name: 'Instagram',
-    handle: '@yzrobo_',
-    url: 'https://instagram.com/yzrobo_',
+    handle: '@yzRobo_',
+    url: 'https://instagram.com/yzRobo_',
     description: 'Behind the scenes',
     icon: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
@@ -102,8 +102,8 @@ const socialLinks = [
   },
   {
     name: 'TikTok',
-    handle: '@yzrobo_',
-    url: 'https://tiktok.com/@yzrobo_',
+    handle: '@yzRobo_',
+    url: 'https://tiktok.com/@yzRobo_',
     description: 'Short-form content',
     icon: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
