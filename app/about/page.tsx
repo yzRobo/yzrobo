@@ -185,7 +185,7 @@ export default function AboutPage() {
                 >
                   drop by
                 </a>{' '}
-                and let us know what you think.
+                and let me know what you think.
               </p>
             </div>
             
