@@ -1,52 +1,9 @@
 // app/about/page.tsx
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
+import React from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import Navigation from '../components/Navigation';
-
-// Modern cursor follower component (same as landing page)
-const CursorGlow = () => {
-  const cursorX = useMotionValue(0);
-  const cursorY = useMotionValue(0);
-  
-  const springConfig = { damping: 25, stiffness: 700 };
-  const cursorXSpring = useSpring(cursorX, springConfig);
-  const cursorYSpring = useSpring(cursorY, springConfig);
-
-  useEffect(() => {
-    const moveCursor = (e: MouseEvent) => {
-      cursorX.set(e.clientX - 16);
-      cursorY.set(e.clientY - 16);
-    };
-    window.addEventListener('mousemove', moveCursor);
-    return () => window.removeEventListener('mousemove', moveCursor);
-  }, []);
-
-  return (
-    <motion.div
-      className="pointer-events-none fixed inset-0 z-30 hidden lg:block"
-      style={{
-        x: cursorXSpring,
-        y: cursorYSpring,
-      }}
-    >
-      <div className="h-8 w-8 rounded-full bg-white/10 blur-xl" />
-    </motion.div>
-  );
-};
-
-// Noise texture overlay for modern depth (same as landing page)
-const NoiseTexture = () => (
-  <div className="pointer-events-none fixed inset-0 z-20 opacity-[0.015]">
-    <svg width="100%" height="100%">
-      <filter id="noise">
-        <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" />
-      </filter>
-      <rect width="100%" height="100%" filter="url(#noise)" />
-    </svg>
-  </div>
-);
 
 // Main component
 export default function AboutPage() {
@@ -56,22 +13,20 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen text-white overflow-x-hidden">
-      <CursorGlow />
-      <NoiseTexture />
       <Navigation />
       
       {/* Main content section with background effects */}
       <section className="relative min-h-screen pt-32 pb-20">
-        {/* Modern gradient background (same as landing page) */}
+        {/* Modern gradient background */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-[var(--gray-900)] via-[var(--background)] to-[var(--background)]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[var(--surface)] via-[var(--background)] to-[var(--background)]" />
           <motion.div
             style={{ y: y1 }}
-            className="absolute top-0 -left-1/4 w-[150%] h-[150%] bg-gradient-to-br from-[var(--accent-secondary)]/20 via-transparent to-transparent rounded-full blur-3xl"
+            className="absolute top-0 -left-1/4 w-[150%] h-[150%] bg-gradient-to-br from-blue-500/10 via-transparent to-transparent rounded-full blur-3xl"
           />
           <motion.div
             style={{ y: y2 }}
-            className="absolute bottom-0 -right-1/4 w-[150%] h-[150%] bg-gradient-to-tl from-[var(--accent-primary)]/20 via-transparent to-transparent rounded-full blur-3xl"
+            className="absolute bottom-0 -right-1/4 w-[150%] h-[150%] bg-gradient-to-tl from-purple-500/10 via-transparent to-transparent rounded-full blur-3xl"
           />
         </div>
 

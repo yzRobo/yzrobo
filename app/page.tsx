@@ -1,54 +1,11 @@
 // app/page.tsx
 'use client';
 
-import React, { useEffect } from 'react';
-import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
+import React from 'react';
+import { motion } from 'framer-motion';
 import { FaGamepad, FaCar, FaUtensils, FaCode } from 'react-icons/fa';
 import Image from 'next/image';
 import Navigation from './components/Navigation';
-
-// Modern cursor follower component
-const CursorGlow = () => {
-  const cursorX = useMotionValue(0);
-  const cursorY = useMotionValue(0);
-  
-  const springConfig = { damping: 25, stiffness: 700 };
-  const cursorXSpring = useSpring(cursorX, springConfig);
-  const cursorYSpring = useSpring(cursorY, springConfig);
-
-  useEffect(() => {
-    const moveCursor = (e: MouseEvent) => {
-      cursorX.set(e.clientX - 16);
-      cursorY.set(e.clientY - 16);
-    };
-    window.addEventListener('mousemove', moveCursor);
-    return () => window.removeEventListener('mousemove', moveCursor);
-  }, []);
-
-  return (
-    <motion.div
-      className="pointer-events-none fixed inset-0 z-30 hidden lg:block"
-      style={{
-        x: cursorXSpring,
-        y: cursorYSpring,
-      }}
-    >
-      <div className="h-8 w-8 rounded-full bg-white/10 blur-xl" />
-    </motion.div>
-  );
-};
-
-// Noise texture overlay for modern depth
-const NoiseTexture = () => (
-  <div className="pointer-events-none fixed inset-0 z-50 opacity-[0.015]">
-    <svg width="100%" height="100%">
-      <filter id="noise">
-        <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" />
-      </filter>
-      <rect width="100%" height="100%" filter="url(#noise)" />
-    </svg>
-  </div>
-);
 
 // Modern feature card
 interface FeatureCardProps {
@@ -56,10 +13,11 @@ interface FeatureCardProps {
   description: string;
   icon: React.ReactNode;
   delay?: number;
+  href?: string;
 }
 
-const FeatureCard = ({ title, description, icon, delay = 0 }: FeatureCardProps) => {
-  return (
+const FeatureCard = ({ title, description, icon, delay = 0, href }: FeatureCardProps) => {
+  const cardContent = (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -80,15 +38,23 @@ const FeatureCard = ({ title, description, icon, delay = 0 }: FeatureCardProps) 
       </div>
     </motion.div>
   );
+
+  if (href) {
+    return (
+      <a href={href} className="block h-full no-underline">
+        {cardContent}
+      </a>
+    );
+  }
+
+  return cardContent;
 };
 
 
 // Main component
 export default function ModernHomepage() {
   return (
-    <div className="min-h-screen flex flex-col bg-black text-white">
-      <CursorGlow />
-      <NoiseTexture />
+    <>
       <Navigation />
 
       {/* Hero Section */}
@@ -137,8 +103,8 @@ export default function ModernHomepage() {
         </div>
       </section>
 
-      {/* Content Section */}
-      <section id="what-i-do" className="py-20 md:py-24 relative bg-black">
+      {/* What I Do Section */}
+      <section id="what-i-do" className="py-20 md:py-1 relative bg-black">
         <div className="absolute inset-0 bg-gradient-to-b from-black via-blue-900/20 to-black" />
         <div className="container mx-auto px-6 relative">
           <motion.div
@@ -157,26 +123,88 @@ export default function ModernHomepage() {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <FeatureCard title="Gaming" description="Live streaming, how-to guides, and building communities around shared gaming experiences (Apex Movement)." icon={<FaGamepad />} delay={0}/>
-            <FeatureCard title="Automotive" description="Motorcycles, Cars, and OBS Trucks. Project build updates, motovlogging, and tinkering." icon={<FaCar />} delay={0.1}/>
+            <FeatureCard href="/gaming" title="Gaming" description="Live streaming, how-to guides, and building communities around shared gaming experiences (Apex Movement)." icon={<FaGamepad />} delay={0}/>
+            <FeatureCard href="/auto" title="Automotive" description="Motorcycles, Cars, and OBS Trucks. Project build updates, motovlogging, and tinkering." icon={<FaCar />} delay={0.1}/>
             <FeatureCard title="Cooking" description="Traditional Italian. Smoking BBQ. Experiments. Still figuring this out as we go." icon={<FaUtensils />} delay={0.2}/>
             <FeatureCard title="Coding" description="Vibe coding our way through webapps, custom domains, and anything that sounds cool." icon={<FaCode />} delay={0.3}/>
           </div>
-            
-          <div className="text-center mt-24">
-             <motion.a
-                href="/links"
-                className="inline-block"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <div className="relative px-10 py-4 bg-[var(--accent-primary)] text-white font-bold rounded-full">
-                    View All Links
-                </div>
-              </motion.a>
-          </div>
         </div>
       </section>
-    </div>
+
+      {/* About Section */}
+      <section id="about" className="py-20 md:py-24 relative bg-black">
+        <div className="container mx-auto px-6 max-w-6xl">
+            <div className="grid md:grid-cols-2 gap-12 md:gap-20 items-center">
+                <motion.div 
+                    initial={{ opacity: 0, x: -50 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="text-center md:text-left"
+                >
+                    <h2 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight text-white">
+                      About
+                    </h2>
+                    <p className="text-xl text-gray-300 mb-8">
+                      Always evolving while staying streamlined.
+                    </p>
+
+                    {/* Divider */}
+                    <div className="w-35 h-[1px] bg-gradient-to-r from-white/50 to-transparent mb-5" />
+
+                    <div className="space-y-6 text-gray-300/80 leading-relaxed">
+                      <p>
+                        I started yzRobo as a way to pull all aspects of my shared interests together in one place. 
+                        I personally have always had a broad collection of things I find interesting ranging from 
+                        sports, video games, motorsports, technology, and everything in between.
+                      </p>
+                      <p>
+                        yzRobo is all about bridging the gaps between the different hobbies and passions we love without pigeonholing ourselves into one group. If you see something you like{' '}
+                        <a 
+                          href="https://www.twitch.tv/yzRobo" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-[var(--accent-primary)] font-semibold hover:underline"
+                        >
+                          drop by
+                        </a>{' '}
+                        and let me know what you think.
+                      </p>
+                    </div>
+                    <div className="mt-12">
+                       <motion.a
+                          href="/links"
+                          className="inline-block"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <div className="relative px-10 py-4 bg-[var(--accent-primary)] text-white font-bold rounded-full">
+                              Connect With Me
+                          </div>
+                        </motion.a>
+                    </div>
+                </motion.div>
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                    className="flex justify-center items-center"
+                >
+                  <div className="relative w-full max-w-sm">
+                      <div className="absolute -inset-8 bg-[var(--accent-primary)]/10 rounded-full blur-3xl animate-pulse-slow"></div>
+                      <Image
+                        src="/media/R6_Circle.png"
+                        alt="yzRobo Helmet Logo"
+                        width={500}
+                        height={500}
+                        className="relative animate-float"
+                      />
+                  </div>
+                </motion.div>
+            </div>
+        </div>
+      </section>
+    </>
   );
 }

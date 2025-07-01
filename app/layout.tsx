@@ -3,6 +3,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Syne } from "next/font/google";
 import { Analytics } from '@vercel/analytics/react';
 import Image from 'next/image'; 
+import Footer from "./components/Footer";
+import GlobalEffects from "./components/GlobalEffects";
 import "./globals.css";
 
 const inter = Inter({
@@ -19,6 +21,7 @@ const syne = Syne({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://yzrobo.com'),
   title: "yzRobo - Gaming, Automotive, Coding & More",
   description: "Explore the intersection of gaming, automotive engineering, culinary arts, and creative coding with yzRobo.",
   keywords: "gaming, streaming, automotive, coding, cooking, yzRobo, yzrobo",
@@ -71,7 +74,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${syne.variable}`}>
-      <body className="min-h-screen antialiased">
+      <body className="min-h-screen antialiased flex flex-col">
+        <GlobalEffects />
         {/* Loading screen */}
         <div id="loading-screen" className="fixed inset-0 z-[100] bg-black flex items-center justify-center transition-opacity duration-500">
           <div className="animate-pulse">
@@ -84,8 +88,12 @@ export default function RootLayout({
             />
           </div>
         </div>
-
-        {children}
+        
+        <main className="flex-grow">
+          {children}
+        </main>
+        
+        <Footer />
 
         {/* Remove loading screen after mount */}
         <script
