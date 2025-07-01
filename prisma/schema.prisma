@@ -1,0 +1,135 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL") // Uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // Uses direct connection
+}
+
+model Recipe {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String
+  category    Category
+  cuisine     String?
+  prepTime    String
+  cookTime    String
+  totalTime   String
+  servings    Int
+  difficulty  Difficulty
+  featured    Boolean  @default(false)
+  published   Boolean  @default(false)
+  
+  // Images stored as URLs (from Vercel Blob or local)
+  heroImage   String?
+  heroImageAlt String?
+  
+  // Relations
+  ingredients Ingredient[]
+  instructions Instruction[]
+  tips        Tip[]
+  nutrition   Nutrition?
+  tags        Tag[]
+  reviews     Review[]
+  
+  // Metadata
+  authorId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  publishedAt DateTime?
+  
+  @@index([slug])
+  @@index([category])
+  @@index([featured])
+}
+
+model Ingredient {
+  id       String  @id @default(cuid())
+  amount   String
+  unit     String?
+  item     String
+  notes    String?
+  group    String? // For grouped ingredients
+  order    Int
+  
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId String
+}
+
+model Instruction {
+  id          String  @id @default(cuid())
+  step        Int
+  title       String?
+  description String  @db.Text
+  image       String?
+  imageAlt    String?
+  time        String?
+  
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId String
+  
+  @@index([recipeId, step])
+}
+
+model Tip {
+  id      String @id @default(cuid())
+  content String
+  order   Int
+  
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId String
+}
+
+model Nutrition {
+  id       String @id @default(cuid())
+  calories Int
+  protein  String
+  carbs    String
+  fat      String
+  fiber    String?
+  sugar    String?
+  sodium   String?
+  
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId String @unique
+}
+
+model Tag {
+  id      String   @id @default(cuid())
+  name    String   @unique
+  slug    String   @unique
+  recipes Recipe[]
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String?
+  
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId  String
+  
+  createdAt DateTime @default(now())
+  
+  @@index([recipeId])
+}
+
+enum Category {
+  italian
+  bbq
+  experimental
+  dessert
+  appetizer
+  main
+  side
+}
+
+enum Difficulty {
+  easy
+  medium
+  hard
+}

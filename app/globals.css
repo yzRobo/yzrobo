@@ -116,3 +116,9 @@ body {
 .animate-pulse-slow {
   animation: pulse-slow 4s ease-in-out infinite;
 }
+
+
+/* SVG Icon Filtering from Black to White */
+.filter-white {
+  filter: invert(1) brightness(2);
+}

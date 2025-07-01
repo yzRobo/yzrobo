@@ -32,7 +32,7 @@ const MobileMenu = ({ isOpen, closeMenu }: { isOpen: boolean, closeMenu: () => v
           <nav className="flex flex-col h-full justify-center items-center space-y-4">
             <NavLink href="/gaming">Gaming</NavLink>
             <NavLink href="/auto">Auto</NavLink>
-            <NavLink href="/#cooking">Cooking</NavLink>
+            <NavLink href="/cooking">Cooking</NavLink>
             <NavLink href="/#coding">Coding Projects</NavLink>
             <NavLink href="/links">Lets Connect</NavLink>
           </nav>
@@ -98,7 +98,7 @@ const Navigation = () => {
           <div className="hidden md:flex items-center space-x-8">
             <motion.a href="/gaming" className="text-gray-400 hover:text-white transition-colors duration-300 text-sm tracking-wide" whileHover={{ y: -2 }}>Gaming</motion.a>
             <motion.a href="/auto" className="text-gray-400 hover:text-white transition-colors duration-300 text-sm tracking-wide" whileHover={{ y: -2 }}>Automotive</motion.a>
-            <motion.a href="/#cooking" className="text-gray-400 hover:text-white transition-colors duration-300 text-sm tracking-wide" whileHover={{ y: -2 }}>Cooking</motion.a>
+            <motion.a href="/cooking" className="text-gray-400 hover:text-white transition-colors duration-300 text-sm tracking-wide" whileHover={{ y: -2 }}>Cooking</motion.a>
             <motion.a href="/#projects" className="text-gray-400 hover:text-white transition-colors duration-300 text-sm tracking-wide" whileHover={{ y: -2 }}>Coding Projects</motion.a>
             <motion.a
               href="/links"

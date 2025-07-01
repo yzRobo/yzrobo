@@ -1,3 +1,5 @@
+// next.config.ts
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
@@ -6,6 +8,6 @@ const nextConfig = {
     // environments where linting is handled separately in CI/CD pipelines.
     ignoreDuringBuilds: true,
   },
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

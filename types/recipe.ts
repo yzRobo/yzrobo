@@ -1,0 +1,92 @@
+export interface Tip {
+    id: string;
+    content: string;
+    order: number;
+  }
+  
+  export interface Tag {
+    id: string;
+    name: string;
+    slug: string;
+  }// types/recipe.ts
+  
+  export interface Recipe {
+    id: string;
+    slug: string;
+    title: string;
+    category: 'italian' | 'bbq' | 'experimental' | 'dessert' | 'appetizer' | 'main' | 'side';
+    cuisine?: string;
+    description: string;
+    prepTime: string;
+    cookTime: string;
+    totalTime: string;
+    servings: number;
+    difficulty: 'easy' | 'medium' | 'hard';
+    featured?: boolean;
+    published?: boolean;
+    heroImage?: string | null;
+    heroImageAlt?: string | null;
+    ingredients: Ingredient[];
+    instructions: Instruction[];
+    tips?: Tip[];
+    nutrition?: Nutrition | null;
+    tags?: Tag[];
+    rating?: number;
+    reviewCount?: number;
+    reviews?: RecipeReview[];
+    authorId?: string | null;
+    createdAt?: Date;
+    updatedAt?: Date;
+    publishedAt?: Date | null;
+  }
+  
+  export interface Ingredient {
+    amount: string;
+    unit?: string;
+    item: string;
+    notes?: string;
+    group?: string; // For recipes with grouped ingredients (e.g., "For the sauce")
+  }
+  
+  export interface Instruction {
+    step: number;
+    title?: string;
+    description: string;
+    image?: {
+      url: string;
+      alt: string;
+    };
+    time?: string;
+  }
+  
+  export interface Nutrition {
+    calories: number;
+    protein: string;
+    carbs: string;
+    fat: string;
+    fiber?: string;
+    sugar?: string;
+    sodium?: string;
+  }
+  
+  export interface RecipeReview {
+    id: string;
+    recipeId: string;
+    userId: string;
+    userName: string;
+    rating: number;
+    comment: string;
+    dateCreated: string;
+    helpful: number;
+  }
+  
+  export interface RecipeCollection {
+    id: string;
+    name: string;
+    description: string;
+    recipes: Recipe[];
+    image?: {
+      url: string;
+      alt: string;
+    };
+  }

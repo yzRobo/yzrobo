@@ -22,8 +22,8 @@ const syne = Syne({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://yzrobo.com'),
-  title: "yzRobo - Gaming, Automotive, Coding & More",
-  description: "Explore the intersection of gaming, automotive engineering, culinary arts, and creative coding with yzRobo.",
+  title: "yzRobo - Gaming, Automotive, Recipes & More",
+  description: "Explore the intersection of gaming, automotive passion, cooking, and creative coding with yzRobo.",
   keywords: "gaming, streaming, automotive, coding, cooking, yzRobo, yzrobo",
   authors: [{ name: "yzRobo" }],
   manifest: '/site.webmanifest',

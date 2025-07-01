@@ -125,8 +125,8 @@ export default function ModernHomepage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <FeatureCard href="/gaming" title="Gaming" description="Live streaming, how-to guides, and building communities around shared gaming experiences (Apex Movement)." icon={<FaGamepad />} delay={0}/>
             <FeatureCard href="/auto" title="Automotive" description="Motorcycles, Cars, and OBS Trucks. Project build updates, motovlogging, and tinkering." icon={<FaCar />} delay={0.1}/>
-            <FeatureCard title="Cooking" description="Traditional Italian. Smoking BBQ. Experiments. Still figuring this out as we go." icon={<FaUtensils />} delay={0.2}/>
-            <FeatureCard title="Coding" description="Vibe coding our way through webapps, custom domains, and anything that sounds cool." icon={<FaCode />} delay={0.3}/>
+            <FeatureCard href="/cooking" title="Cooking" description="Traditional Italian. Smoking BBQ. Experiments. Still figuring this out as we go." icon={<FaUtensils />} delay={0.2}/>
+            <FeatureCard href="/coding" title="Coding" description="Vibe coding our way through various projects. Webapps, custom domains, and anything that sounds cool." icon={<FaCode />} delay={0.3}/>
           </div>
         </div>
       </section>
