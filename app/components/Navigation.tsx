@@ -30,9 +30,9 @@ const MobileMenu = ({ isOpen, closeMenu }: { isOpen: boolean, closeMenu: () => v
           onClick={(e) => e.stopPropagation()}
         >
           <nav className="flex flex-col h-full justify-center items-center space-y-4">
-            <NavLink href="/gaming">About</NavLink>
-            <NavLink href="/auto">Gaming</NavLink>
-            <NavLink href="/#cooking">Automotive</NavLink>
+            <NavLink href="/gaming">Gaming</NavLink>
+            <NavLink href="/auto">Auto</NavLink>
+            <NavLink href="/#cooking">Cooking</NavLink>
             <NavLink href="/#coding">Coding Projects</NavLink>
             <NavLink href="/links">Lets Connect</NavLink>
           </nav>
