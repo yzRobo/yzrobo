@@ -30,11 +30,11 @@ const MobileMenu = ({ isOpen, closeMenu }: { isOpen: boolean, closeMenu: () => v
           onClick={(e) => e.stopPropagation()}
         >
           <nav className="flex flex-col h-full justify-center items-center space-y-4">
-            <NavLink href="/about">About</NavLink>
-            <NavLink href="/#gaming">Gaming</NavLink>
-            <NavLink href="/#automotive">Automotive</NavLink>
-            <NavLink href="/#projects">Projects</NavLink>
-            <NavLink href="/links">Connect</NavLink>
+            <NavLink href="/#gaming">About</NavLink>
+            <NavLink href="/#automotive">Gaming</NavLink>
+            <NavLink href="/#cooking">Automotive</NavLink>
+            <NavLink href="/#coding">Coding Projects</NavLink>
+            <NavLink href="/links">Lets Connect</NavLink>
           </nav>
         </motion.div>
       </motion.div>
@@ -96,10 +96,10 @@ const Navigation = () => {
           
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
-            <motion.a href="/about" className="text-gray-400 hover:text-white transition-colors duration-300 text-sm tracking-wide" whileHover={{ y: -2 }}>About</motion.a>
             <motion.a href="/#gaming" className="text-gray-400 hover:text-white transition-colors duration-300 text-sm tracking-wide" whileHover={{ y: -2 }}>Gaming</motion.a>
             <motion.a href="/#automotive" className="text-gray-400 hover:text-white transition-colors duration-300 text-sm tracking-wide" whileHover={{ y: -2 }}>Automotive</motion.a>
-            <motion.a href="/#projects" className="text-gray-400 hover:text-white transition-colors duration-300 text-sm tracking-wide" whileHover={{ y: -2 }}>Projects</motion.a>
+            <motion.a href="/#cooking" className="text-gray-400 hover:text-white transition-colors duration-300 text-sm tracking-wide" whileHover={{ y: -2 }}>Cooking</motion.a>
+            <motion.a href="/#projects" className="text-gray-400 hover:text-white transition-colors duration-300 text-sm tracking-wide" whileHover={{ y: -2 }}>Coding Projects</motion.a>
             <motion.a
               href="/links"
               className="relative group"
