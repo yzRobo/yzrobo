@@ -214,7 +214,7 @@ export default function LinksPage() {
             className="text-center max-w-2xl mx-auto"
           >
             <h1 className="text-5xl sm:text-6xl md:text-7xl font-display font-bold mb-4 md:mb-6 tracking-tight text-white">
-              Connect With Me
+              
             </h1>
             <p className="text-lg sm:text-xl text-gray-400 mb-8 md:mb-12 max-w-lg mx-auto">
               Find me across the web. Gaming streams, automotive content, and community spaces.

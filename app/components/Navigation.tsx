@@ -107,7 +107,7 @@ const Navigation = () => {
               whileTap={{ scale: 0.95 }}
             >
               <div className="relative px-6 py-2 bg-black/20 backdrop-blur-sm rounded-full border border-white/20 text-white text-sm group-hover:border-white/50 transition-colors">
-                Connect
+                Lets Connect
               </div>
             </motion.a>
           </div>
