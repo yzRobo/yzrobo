@@ -2,27 +2,18 @@
 @import "tailwindcss";
 
 :root {
-  /* Core colors */
-  --background: #000000;
+  /* Core Colors */
+  --background: #000000; /* Pure black for max contrast */
+  --surface: #111111;    /* A very dark gray for card surfaces */
   --foreground: #ffffff;
-  
-  /* Grays */
-  --gray-900: #0a0a0a;
-  --gray-800: #171717;
-  --gray-700: #262626;
-  --gray-600: #404040;
-  --gray-500: #737373;
-  --gray-400: #a3a3a3;
-  --gray-300: #d4d4d4;
-  
-  /* Accent colors */
-  --accent-primary: #3b82f6;
-  --accent-secondary: #8b5cf6;
-  
-  /* Borders and surfaces */
-  --border: rgba(255, 255, 255, 0.08);
-  --surface: rgba(255, 255, 255, 0.03);
-  
+
+  /* YZ-Inspired Accents */
+  --accent-primary: #0038b8; /* A vibrant, iconic Yamaha Racing Blue */
+  /* --accent-secondary: #0038b8; White is now a primary accent */
+
+  /* Borders and UI */
+  --border: rgba(255, 255, 255, 0.1);
+
   /* Typography */
   --font-sans: var(--font-inter);
   --font-display: var(--font-syne);
@@ -104,7 +95,7 @@ body {
 }
 
 .glow {
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--accent-primary) 50%, transparent);
 }
 
 /* Animation utilities */

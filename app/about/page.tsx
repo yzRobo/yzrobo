@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
+import Navigation from '../components/Navigation';
 
 // Modern cursor follower component (same as landing page)
 const CursorGlow = () => {
@@ -47,71 +48,6 @@ const NoiseTexture = () => (
   </div>
 );
 
-// Navigation component (same as landing page)
-const Navigation = () => {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled ? 'bg-black/80 backdrop-blur-xl border-b border-white/5' : ''
-      }`}
-    >
-      <div className="container mx-auto px-6 py-6 flex justify-between items-center">
-        <motion.a
-          href="/"
-          whileHover={{ scale: 1.05 }}
-          className="text-2xl font-bold tracking-tight"
-        >
-          <span className="text-gray-400">yz</span>
-          <span className="text-white">Robo</span>
-        </motion.a>
-        
-        <div className="hidden md:flex items-center space-x-8">
-          <motion.a
-            href="/"
-            className="text-gray-400 hover:text-white transition-colors duration-300 text-sm tracking-wide"
-            whileHover={{ y: -2 }}
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            Home
-          </motion.a>
-          <motion.a
-            href="/about"
-            className="text-white transition-colors duration-300 text-sm tracking-wide"
-            whileHover={{ y: -2 }}
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            About
-          </motion.a>
-          <motion.a
-            href="/links"
-            className="relative group"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <div className="absolute inset-0 bg-white/20 rounded-full blur-xl group-hover:bg-white/30 transition-all duration-300" />
-            <div className="relative px-6 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 text-white text-sm">
-              Connect
-            </div>
-          </motion.a>
-        </div>
-      </div>
-    </motion.nav>
-  );
-};
-
 // Main component
 export default function AboutPage() {
   const { scrollY } = useScroll();
@@ -119,7 +55,7 @@ export default function AboutPage() {
   const y2 = useTransform(scrollY, [0, 500], [0, -100]);
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-x-hidden">
+    <div className="min-h-screen text-white overflow-x-hidden">
       <CursorGlow />
       <NoiseTexture />
       <Navigation />
@@ -128,14 +64,14 @@ export default function AboutPage() {
       <section className="relative min-h-screen pt-32 pb-20">
         {/* Modern gradient background (same as landing page) */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-gray-900 via-black to-black" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[var(--gray-900)] via-[var(--background)] to-[var(--background)]" />
           <motion.div
             style={{ y: y1 }}
-            className="absolute top-0 -left-1/4 w-[150%] h-[150%] bg-gradient-to-br from-purple-900/20 via-transparent to-transparent rounded-full blur-3xl"
+            className="absolute top-0 -left-1/4 w-[150%] h-[150%] bg-gradient-to-br from-[var(--accent-secondary)]/20 via-transparent to-transparent rounded-full blur-3xl"
           />
           <motion.div
             style={{ y: y2 }}
-            className="absolute bottom-0 -right-1/4 w-[150%] h-[150%] bg-gradient-to-tl from-blue-900/20 via-transparent to-transparent rounded-full blur-3xl"
+            className="absolute bottom-0 -right-1/4 w-[150%] h-[150%] bg-gradient-to-tl from-[var(--accent-primary)]/20 via-transparent to-transparent rounded-full blur-3xl"
           />
         </div>
 

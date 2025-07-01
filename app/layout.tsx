@@ -1,6 +1,8 @@
 // app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import { Inter, Syne } from "next/font/google";
+import { Analytics } from '@vercel/analytics/react';
+import Image from 'next/image'; 
 import "./globals.css";
 
 const inter = Inter({
@@ -21,6 +23,15 @@ export const metadata: Metadata = {
   description: "Explore the intersection of gaming, automotive engineering, culinary arts, and creative coding with yzRobo.",
   keywords: "gaming, streaming, automotive, coding, cooking, yzRobo, yzrobo",
   authors: [{ name: "yzRobo" }],
+  manifest: '/site.webmanifest',
+  icons: {
+    icon: [
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+    ],
+    apple: '/apple-touch-icon.png',
+    shortcut: '/favicon.ico',
+  },
   openGraph: {
     title: "yzRobo",
     description: "Gaming enthusiast. Automotive engineer. Creative coder.",
@@ -60,17 +71,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${syne.variable}`}>
-      <body className="min-h-screen bg-black antialiased">
+      <body className="min-h-screen antialiased">
         {/* Loading screen */}
         <div id="loading-screen" className="fixed inset-0 z-[100] bg-black flex items-center justify-center transition-opacity duration-500">
-          <div className="text-6xl font-display font-bold animate-pulse">
-            <span className="text-gray-400">yz</span>
-            <span className="text-white">Robo</span>
+          <div className="animate-pulse">
+            <Image
+              src="/media/yzRobo_Logo_Main.png"
+              alt="yzRobo Logo"
+              width={240}
+              height={70}
+              priority
+            />
           </div>
         </div>
-        
+
         {children}
-        
+
         {/* Remove loading screen after mount */}
         <script
           dangerouslySetInnerHTML={{
@@ -89,6 +105,7 @@ export default function RootLayout({
             `,
           }}
         />
+        <Analytics />
       </body>
     </html>
   );
