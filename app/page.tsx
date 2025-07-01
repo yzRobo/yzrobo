@@ -152,15 +152,15 @@ export default function ModernHomepage() {
               What I Do
             </h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Exploring the intersection of technology, creativity, and passion through various mediums.
+              Exploring the intersection of technology and creativity wihtin my various hobbies and interests.
             </p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <FeatureCard title="Gaming" description="Live streaming, gameplay content, and building communities around shared gaming experiences." icon={<FaGamepad />} delay={0}/>
-            <FeatureCard title="Automotive" description="Engineering insights, project builds, and the art of mechanical perfection." icon={<FaCar />} delay={0.1}/>
-            <FeatureCard title="Cooking" description="Culinary experiments, recipe development, and the science behind great food." icon={<FaUtensils />} delay={0.2}/>
-            <FeatureCard title="Coding" description="Building digital solutions, web applications, and pushing the boundaries of what's possible." icon={<FaCode />} delay={0.3}/>
+            <FeatureCard title="Gaming" description="Live streaming, how-to guides, and building communities around shared gaming experiences (Apex Movement)." icon={<FaGamepad />} delay={0}/>
+            <FeatureCard title="Automotive" description="Motorcycles, Cars, and OBS Trucks. Project build updates, motovlogging, and tinkering." icon={<FaCar />} delay={0.1}/>
+            <FeatureCard title="Cooking" description="Traditional Italian. Smoking BBQ. Experiments. Still figuring this out as we go." icon={<FaUtensils />} delay={0.2}/>
+            <FeatureCard title="Coding" description="Vibe coding our way through webapps, custom domains, and anything that sounds cool." icon={<FaCode />} delay={0.3}/>
           </div>
             
           <div className="text-center mt-24">
