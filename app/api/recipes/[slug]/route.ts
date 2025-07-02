@@ -1,8 +1,6 @@
 // app/api/recipes/[slug]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 // GET /api/recipes/[slug] - Get a single recipe
 export async function GET(
@@ -10,8 +8,9 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   try {
+    const { slug } = await params;
     const recipe = await prisma.recipe.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
       include: {
         ingredients: { orderBy: { order: 'asc' } },
         instructions: { orderBy: { step: 'asc' } },

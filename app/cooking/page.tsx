@@ -1,7 +1,7 @@
 // app/cooking/page.tsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaUtensils, 
@@ -9,109 +9,21 @@ import {
   FaFire, 
   FaLeaf,
   FaPepperHot,
-  FaHamburger,
-  FaWineGlass,
-  FaCookie
+  FaCookie,
+  FaPizzaSlice
 } from 'react-icons/fa';
 import Navigation from '../components/Navigation';
-
-// Recipe type definition
-interface Recipe {
-  id: string;
-  slug: string;
-  title: string;
-  category: 'italian' | 'bbq' | 'experimental' | 'dessert';
-  description: string;
-  prepTime: string;
-  cookTime: string;
-  totalTime: string;
-  servings: number;
-  difficulty: 'easy' | 'medium' | 'hard';
-  heroImage?: string | null;
-  featured?: boolean;
-  rating?: number;
-  reviewCount?: number;
-}
-
-// Sample recipes data - this would come from your CMS/database later
-const recipes: Recipe[] = [];
+import RecipeCard from '../components/RecipeCard';
+import { Recipe } from '@/types/recipe';
 
 // Category configuration
 const categories = [
   { id: 'all', name: 'All Recipes', icon: <FaUtensils /> },
-  { id: 'italian', name: 'Italian', icon: <FaLeaf /> },
+  { id: 'italian', name: 'Italian', icon: <FaPizzaSlice /> },
   { id: 'bbq', name: 'BBQ & Smoking', icon: <FaFire /> },
   { id: 'experimental', name: 'Experiments', icon: <FaPepperHot /> },
   { id: 'dessert', name: 'Desserts', icon: <FaCookie /> }
 ];
-
-// Recipe Card Component
-const RecipeCard = ({ recipe, index }: { recipe: Recipe; index: number }) => {
-  const difficultyColors = {
-    easy: 'text-green-400',
-    medium: 'text-yellow-400',
-    hard: 'text-red-400'
-  };
-
-  const categoryIcons = {
-    italian: <FaLeaf />,
-    bbq: <FaFire />,
-    experimental: <FaPepperHot />,
-    dessert: <FaCookie />
-  };
-
-  return (
-    <motion.article
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1, duration: 0.5 }}
-      whileHover={{ y: -5, transition: { duration: 0.2 } }}
-      className="group cursor-pointer"
-    >
-      <div className="relative h-full bg-black/20 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden hover:border-[var(--accent-primary)]/50 transition-all duration-300">
-        {/* Image placeholder */}
-        <div className="aspect-[4/3] bg-gradient-to-br from-[var(--surface)] to-black/50 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
-          <div className="absolute top-4 left-4 z-20 text-3xl text-white/80">
-            {categoryIcons[recipe.category]}
-          </div>
-          {recipe.featured && (
-            <div className="absolute top-4 right-4 z-20 px-3 py-1 bg-[var(--accent-primary)] text-white text-xs font-bold rounded-full">
-              FEATURED
-            </div>
-          )}
-        </div>
-
-        {/* Content */}
-        <div className="p-6">
-          <h3 className="text-xl font-bold text-white mb-2 group-hover:text-[var(--accent-primary)] transition-colors">
-            {recipe.title}
-          </h3>
-          <p className="text-gray-400 text-sm mb-4 line-clamp-2">
-            {recipe.description}
-          </p>
-
-          {/* Meta info */}
-          <div className="flex items-center justify-between text-xs text-gray-500">
-            <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1">
-                <FaClock className="text-[var(--accent-primary)]" />
-                {recipe.prepTime}
-              </span>
-              <span className="flex items-center gap-1">
-                <FaFire className="text-[var(--accent-primary)]" />
-                {recipe.cookTime}
-              </span>
-            </div>
-            <span className={`font-medium ${difficultyColors[recipe.difficulty]}`}>
-              {recipe.difficulty.toUpperCase()}
-            </span>
-          </div>
-        </div>
-      </div>
-    </motion.article>
-  );
-};
 
 // Filter Button Component
 const FilterButton = ({ 
@@ -143,7 +55,7 @@ export default function CookingPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchRecipes();
   }, [activeCategory]);
 
@@ -152,6 +64,7 @@ export default function CookingPage() {
       setLoading(true);
       const response = await fetch(`/api/recipes?category=${activeCategory}&published=true`);
       const data = await response.json();
+      console.log('Fetched recipes:', data); // Debug log
       setRecipes(data);
     } catch (error) {
       console.error('Error fetching recipes:', error);
@@ -174,8 +87,10 @@ export default function CookingPage() {
         className="pt-32 md:pt-40 pb-16 md:pb-20 text-center relative overflow-hidden"
       >
         <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl opacity-60"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-red-500/20 rounded-full blur-3xl opacity-60"></div>
+          {/* Unique cooking page effect - blue flame/heat waves */}
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-[var(--accent-primary)]/30 rounded-full blur-3xl opacity-60 animate-pulse-slow"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[var(--accent-primary)]/20 rounded-full blur-3xl opacity-60 animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--accent-primary)]/10 rounded-full blur-3xl opacity-40 animate-float"></div>
         </div>
         
         <div className="container mx-auto px-6 relative z-10">

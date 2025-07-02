@@ -41,14 +41,17 @@ export interface Tip {
   }
   
   export interface Ingredient {
+    id?: string;
     amount: string;
     unit?: string;
     item: string;
     notes?: string;
     group?: string; // For recipes with grouped ingredients (e.g., "For the sauce")
+    order?: number;
   }
   
   export interface Instruction {
+    id?: string;
     step: number;
     title?: string;
     description: string;

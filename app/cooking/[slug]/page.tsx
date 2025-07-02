@@ -1,8 +1,9 @@
-// app/cooking/[id]/page.tsx
+// app/cooking/[slug]/page.tsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useParams } from 'next/navigation';
 import { 
   FaClock, 
   FaFire, 
@@ -11,86 +12,13 @@ import {
   FaArrowLeft,
   FaPrint,
   FaShare,
-  FaBookmark,
   FaStar
 } from 'react-icons/fa';
 import Navigation from '../../components/Navigation';
-
-// This would come from your data source
-const recipeData = {
-  id: 'classic-carbonara',
-  title: 'Classic Carbonara',
-  category: 'italian',
-  description: 'An authentic Roman carbonara made with guanciale, eggs, and pecorino romano. No cream, no peas - just the real deal.',
-  prepTime: '15 min',
-  cookTime: '20 min',
-  totalTime: '35 min',
-  servings: 4,
-  difficulty: 'medium',
-  rating: 4.8,
-  reviewCount: 127,
-  ingredients: [
-    { amount: '400g', item: 'Spaghetti or rigatoni' },
-    { amount: '200g', item: 'Guanciale (or pancetta if unavailable)' },
-    { amount: '4', item: 'Large egg yolks' },
-    { amount: '1', item: 'Whole egg' },
-    { amount: '100g', item: 'Pecorino Romano, finely grated' },
-    { amount: 'To taste', item: 'Freshly ground black pepper' },
-    { amount: 'As needed', item: 'Pasta water' }
-  ],
-  instructions: [
-    {
-      step: 1,
-      title: 'Prepare the guanciale',
-      description: 'Cut the guanciale into small cubes or thick matchsticks. No need to add oil - the guanciale will render its own fat.'
-    },
-    {
-      step: 2,
-      title: 'Start the pasta',
-      description: 'Bring a large pot of water to boil. Salt it well (it should taste like the sea). Add the pasta and cook according to package directions minus 1 minute.'
-    },
-    {
-      step: 3,
-      title: 'Render the guanciale',
-      description: 'While the pasta cooks, place the guanciale in a large, cold pan. Turn heat to medium and cook, stirring occasionally, until deeply golden and crispy, about 5-7 minutes.'
-    },
-    {
-      step: 4,
-      title: 'Prepare the egg mixture',
-      description: 'In a bowl, whisk together the egg yolks, whole egg, and most of the pecorino (save some for garnish). Add a generous amount of black pepper.'
-    },
-    {
-      step: 5,
-      title: 'Combine everything',
-      description: 'When pasta is ready, reserve 1 cup of pasta water. Drain pasta and add to the pan with guanciale (heat OFF). Let it cool for 30 seconds, then add the egg mixture, tossing vigorously.'
-    },
-    {
-      step: 6,
-      title: 'Achieve the perfect cream',
-      description: 'Add pasta water a little at a time, tossing constantly, until you achieve a creamy sauce that coats the pasta. The residual heat will cook the eggs without scrambling them.'
-    },
-    {
-      step: 7,
-      title: 'Serve immediately',
-      description: 'Plate the carbonara, top with remaining pecorino and more black pepper. Serve immediately while hot.'
-    }
-  ],
-  tips: [
-    'The key to carbonara is temperature control - too hot and you get scrambled eggs, too cool and the sauce won\'t form',
-    'Use the best quality eggs you can find - the yolks are the star',
-    'If you can\'t find guanciale, pancetta works, but the flavor will be different',
-    'Never add cream! The creaminess comes from the egg and pasta water emulsion'
-  ],
-  nutrition: {
-    calories: 580,
-    protein: '24g',
-    carbs: '72g',
-    fat: '22g'
-  }
-};
+import { Recipe } from '@/types/recipe';
 
 // Ingredient Item Component
-const IngredientItem = ({ ingredient, index }: { ingredient: { amount: string; item: string }; index: number }) => (
+const IngredientItem = ({ ingredient, index }: { ingredient: any; index: number }) => (
   <motion.li
     initial={{ opacity: 0, x: -20 }}
     animate={{ opacity: 1, x: 0 }}
@@ -100,7 +28,9 @@ const IngredientItem = ({ ingredient, index }: { ingredient: { amount: string; i
     <FaCheckCircle className="text-[var(--accent-primary)] mt-0.5 flex-shrink-0" />
     <div>
       <span className="font-semibold text-white">{ingredient.amount}</span>
+      {ingredient.unit && <span className="text-gray-300 ml-1">{ingredient.unit}</span>}
       <span className="text-gray-300 ml-2">{ingredient.item}</span>
+      {ingredient.notes && <span className="text-gray-400 ml-2 text-sm">({ingredient.notes})</span>}
     </div>
   </motion.li>
 );
@@ -117,7 +47,7 @@ const InstructionStep = ({ instruction, index }: { instruction: any; index: numb
       {instruction.step}
     </div>
     <div className="flex-1">
-      <h3 className="text-lg font-semibold text-white mb-1">{instruction.title}</h3>
+      {instruction.title && <h3 className="text-lg font-semibold text-white mb-1">{instruction.title}</h3>}
       <p className="text-gray-300 leading-relaxed">{instruction.description}</p>
     </div>
   </motion.div>
@@ -137,7 +67,56 @@ const ActionButton = ({ icon, label, onClick }: { icon: React.ReactNode; label: 
 );
 
 export default function RecipeDetailPage() {
-  const [savedRecipe, setSavedRecipe] = useState(false);
+  const params = useParams();
+  const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (params.slug) {
+      fetchRecipe(params.slug as string);
+    }
+  }, [params.slug]);
+
+  const fetchRecipe = async (slug: string) => {
+    try {
+      const response = await fetch(`/api/recipes/${slug}`);
+      if (response.ok) {
+        const data = await response.json();
+        setRecipe(data);
+      } else {
+        console.error('Recipe not found');
+      }
+    } catch (error) {
+      console.error('Error fetching recipe:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <Navigation />
+        <div className="flex items-center justify-center h-[80vh]">
+          <div className="animate-pulse text-2xl">Loading recipe...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!recipe) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <Navigation />
+        <div className="flex flex-col items-center justify-center h-[80vh]">
+          <h1 className="text-4xl font-bold mb-4">Recipe Not Found</h1>
+          <a href="/cooking" className="text-[var(--accent-primary)] hover:underline">
+            ← Back to recipes
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -145,6 +124,18 @@ export default function RecipeDetailPage() {
       
       {/* Hero Section */}
       <section className="relative pt-24 pb-12 md:pt-32 md:pb-16">
+        {/* Hero Image */}
+        {recipe.heroImage && (
+          <div className="absolute inset-0 z-0">
+            <img 
+              src={recipe.heroImage} 
+              alt={recipe.heroImageAlt || recipe.title}
+              className="w-full h-full object-cover opacity-30"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/70 to-black" />
+          </div>
+        )}
+        
         <div className="absolute inset-0 bg-gradient-to-b from-[var(--surface)] to-transparent opacity-50" />
         
         <div className="container mx-auto px-6 relative z-10">
@@ -167,7 +158,7 @@ export default function RecipeDetailPage() {
               transition={{ delay: 0.1 }}
               className="text-4xl md:text-6xl font-bold mb-4"
             >
-              {recipeData.title}
+              {recipe.title}
             </motion.h1>
             
             <motion.p
@@ -176,7 +167,7 @@ export default function RecipeDetailPage() {
               transition={{ delay: 0.2 }}
               className="text-xl text-gray-400 mb-6"
             >
-              {recipeData.description}
+              {recipe.description}
             </motion.p>
 
             {/* Recipe meta info */}
@@ -188,20 +179,22 @@ export default function RecipeDetailPage() {
             >
               <div className="flex items-center gap-2">
                 <FaClock className="text-[var(--accent-primary)]" />
-                <span>Total: {recipeData.totalTime}</span>
+                <span>Total: {recipe.totalTime}</span>
               </div>
               <div className="flex items-center gap-2">
                 <FaUsers className="text-[var(--accent-primary)]" />
-                <span>Serves {recipeData.servings}</span>
+                <span>Serves {recipe.servings}</span>
               </div>
               <div className="flex items-center gap-2">
                 <FaFire className="text-[var(--accent-primary)]" />
-                <span className="capitalize">{recipeData.difficulty}</span>
+                <span className="capitalize">{recipe.difficulty}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <FaStar className="text-yellow-400" />
-                <span>{recipeData.rating} ({recipeData.reviewCount} reviews)</span>
-              </div>
+              {recipe.rating && recipe.rating > 0 && (
+                <div className="flex items-center gap-2">
+                  <FaStar className="text-yellow-400" />
+                  <span>{recipe.rating} ({recipe.reviewCount} reviews)</span>
+                </div>
+              )}
             </motion.div>
 
             {/* Action buttons */}
@@ -211,12 +204,31 @@ export default function RecipeDetailPage() {
               transition={{ delay: 0.4 }}
               className="flex flex-wrap gap-3"
             >
-              <ActionButton icon={<FaPrint />} label="Print" />
-              <ActionButton icon={<FaShare />} label="Share" />
               <ActionButton 
-                icon={<FaBookmark className={savedRecipe ? 'text-[var(--accent-primary)]' : ''} />} 
-                label={savedRecipe ? 'Saved' : 'Save'} 
-                onClick={() => setSavedRecipe(!savedRecipe)}
+                icon={<FaPrint />} 
+                label="Print" 
+                onClick={() => window.print()} 
+              />
+              <ActionButton 
+                icon={<FaShare />} 
+                label="Share" 
+                onClick={async () => {
+                  if (navigator.share) {
+                    try {
+                      await navigator.share({
+                        title: recipe.title,
+                        text: recipe.description,
+                        url: window.location.href,
+                      });
+                    } catch (err) {
+                      console.log('Error sharing:', err);
+                    }
+                  } else {
+                    // Fallback: copy to clipboard
+                    navigator.clipboard.writeText(window.location.href);
+                    alert('Link copied to clipboard!');
+                  }
+                }}
               />
             </motion.div>
           </div>
@@ -236,8 +248,8 @@ export default function RecipeDetailPage() {
             >
               <h2 className="text-2xl font-bold mb-6">Ingredients</h2>
               <ul className="space-y-1">
-                {recipeData.ingredients.map((ingredient, index) => (
-                  <IngredientItem key={index} ingredient={ingredient} index={index} />
+                {recipe.ingredients.map((ingredient, index) => (
+                  <IngredientItem key={ingredient.id || index} ingredient={ingredient} index={index} />
                 ))}
               </ul>
             </motion.div>
@@ -251,13 +263,13 @@ export default function RecipeDetailPage() {
             >
               <h2 className="text-2xl font-bold mb-6">Instructions</h2>
               <div className="space-y-6">
-                {recipeData.instructions.map((instruction, index) => (
-                  <InstructionStep key={index} instruction={instruction} index={index} />
+                {recipe.instructions.map((instruction, index) => (
+                  <InstructionStep key={instruction.id || index} instruction={instruction} index={index} />
                 ))}
               </div>
 
               {/* Tips */}
-              {recipeData.tips.length > 0 && (
+              {recipe.tips && recipe.tips.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -266,10 +278,10 @@ export default function RecipeDetailPage() {
                 >
                   <h3 className="text-xl font-bold mb-4">Pro Tips</h3>
                   <ul className="space-y-3">
-                    {recipeData.tips.map((tip, index) => (
-                      <li key={index} className="flex items-start gap-3">
+                    {recipe.tips.map((tip, index) => (
+                      <li key={tip.id || index} className="flex items-start gap-3">
                         <span className="text-[var(--accent-primary)] mt-1">•</span>
-                        <span className="text-gray-300">{tip}</span>
+                        <span className="text-gray-300">{tip.content}</span>
                       </li>
                     ))}
                   </ul>
@@ -277,32 +289,34 @@ export default function RecipeDetailPage() {
               )}
 
               {/* Nutrition */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="mt-8 p-6 bg-[var(--surface)]/50 rounded-2xl"
-              >
-                <h3 className="text-lg font-bold mb-3">Nutrition Per Serving</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-400">Calories</span>
-                    <p className="font-semibold">{recipeData.nutrition.calories}</p>
+              {recipe.nutrition && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="mt-8 p-6 bg-[var(--surface)]/50 rounded-2xl"
+                >
+                  <h3 className="text-lg font-bold mb-3">Nutrition Per Serving</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-400">Calories</span>
+                      <p className="font-semibold">{recipe.nutrition.calories}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Protein</span>
+                      <p className="font-semibold">{recipe.nutrition.protein}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Carbs</span>
+                      <p className="font-semibold">{recipe.nutrition.carbs}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Fat</span>
+                      <p className="font-semibold">{recipe.nutrition.fat}</p>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-gray-400">Protein</span>
-                    <p className="font-semibold">{recipeData.nutrition.protein}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Carbs</span>
-                    <p className="font-semibold">{recipeData.nutrition.carbs}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Fat</span>
-                    <p className="font-semibold">{recipeData.nutrition.fat}</p>
-                  </div>
-                </div>
-              </motion.div>
+                </motion.div>
+              )}
             </motion.div>
           </div>
         </div>

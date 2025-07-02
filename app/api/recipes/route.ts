@@ -1,106 +1,133 @@
-// app/api/recipes/[slug]/route.ts
+// app/api/recipes/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
+import { put } from '@vercel/blob';
 
-const prisma = new PrismaClient();
-
-// GET /api/recipes/[slug] - Get a single recipe
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { slug: string } }
-) {
+// GET /api/recipes - Fetch all recipes or filtered recipes
+export async function GET(request: NextRequest) {
   try {
-    const recipe = await prisma.recipe.findUnique({
-      where: { slug: params.slug },
+    const searchParams = request.nextUrl.searchParams;
+    const category = searchParams.get('category');
+    const featured = searchParams.get('featured');
+    const published = searchParams.get('published');
+    
+    const where: any = {};
+    
+    if (category && category !== 'all') {
+      where.category = category;
+    }
+    
+    if (featured === 'true') {
+      where.featured = true;
+    }
+    
+    // Default to only showing published recipes
+    if (published !== 'false') {
+      where.published = true;
+    }
+    
+    const recipes = await prisma.recipe.findMany({
+      where,
       include: {
         ingredients: { orderBy: { order: 'asc' } },
         instructions: { orderBy: { step: 'asc' } },
         tips: { orderBy: { order: 'asc' } },
         nutrition: true,
         tags: true,
-        reviews: {
-          orderBy: { createdAt: 'desc' },
-          take: 10, // Limit reviews for performance
-        },
+        reviews: true,
       },
+      orderBy: { createdAt: 'desc' },
     });
     
-    if (!recipe) {
-      return NextResponse.json(
-        { error: 'Recipe not found' },
-        { status: 404 }
-      );
-    }
-    
     // Calculate average rating
-    const avgRating = recipe.reviews.length > 0
-      ? recipe.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / recipe.reviews.length
-      : 0;
+    const recipesWithRating = recipes.map((recipe: any) => {
+      const avgRating = recipe.reviews.length > 0
+        ? recipe.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / recipe.reviews.length
+        : 0;
+      
+      return {
+        ...recipe,
+        rating: Math.round(avgRating * 10) / 10,
+        reviewCount: recipe.reviews.length,
+      };
+    });
     
-    const recipeWithRating = {
-      ...recipe,
-      rating: Math.round(avgRating * 10) / 10,
-      reviewCount: recipe.reviews.length,
-    };
-    
-    return NextResponse.json(recipeWithRating);
+    return NextResponse.json(recipesWithRating);
   } catch (error) {
-    console.error('Error fetching recipe:', error);
+    console.error('Error fetching recipes:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch recipe' },
+      { error: 'Failed to fetch recipes' },
       { status: 500 }
     );
   }
 }
 
-// PUT /api/recipes/[slug] - Update a recipe
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { slug: string } }
-) {
+// POST /api/recipes - Create a new recipe
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const {
+      title,
+      description,
+      category,
+      cuisine,
+      prepTime,
+      cookTime,
+      totalTime,
+      servings,
+      difficulty,
+      featured,
+      published,
+      ingredients,
+      instructions,
+      tips,
+      nutrition,
+      tags,
+      heroImage, // This will be a base64 string or File
+    } = body;
     
-    // Find existing recipe
-    const existingRecipe = await prisma.recipe.findUnique({
-      where: { slug: params.slug },
-      include: {
-        ingredients: true,
-        instructions: true,
-        tips: true,
-      },
-    });
+    // Generate slug from title
+    const slug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
     
-    if (!existingRecipe) {
-      return NextResponse.json(
-        { error: 'Recipe not found' },
-        { status: 404 }
-      );
+    // Handle image upload if provided
+    let heroImageUrl = null;
+    if (heroImage && typeof heroImage === 'string' && heroImage.startsWith('data:')) {
+      // Convert base64 to blob and upload
+      const base64Data = heroImage.split(',')[1];
+      const buffer = Buffer.from(base64Data, 'base64');
+      const filename = `recipes/${slug}-hero-${Date.now()}.jpg`;
+      
+      const blob = await put(filename, buffer, {
+        access: 'public',
+        contentType: 'image/jpeg',
+      });
+      
+      heroImageUrl = blob.url;
     }
     
-    // Update recipe
-    const updatedRecipe = await prisma.recipe.update({
-      where: { slug: params.slug },
+    // Create recipe with all relations
+    const recipe = await prisma.recipe.create({
       data: {
-        title: body.title,
-        description: body.description,
-        category: body.category,
-        cuisine: body.cuisine,
-        prepTime: body.prepTime,
-        cookTime: body.cookTime,
-        totalTime: body.totalTime,
-        servings: body.servings,
-        difficulty: body.difficulty,
-        featured: body.featured,
-        published: body.published,
-        publishedAt: body.published && !existingRecipe.publishedAt 
-          ? new Date() 
-          : existingRecipe.publishedAt,
-        
-        // Delete existing relations and create new ones
+        slug,
+        title,
+        description,
+        category,
+        cuisine,
+        prepTime,
+        cookTime,
+        totalTime,
+        servings: parseInt(servings),
+        difficulty,
+        featured: featured || false,
+        published: published || false,
+        heroImage: heroImageUrl,
+        heroImageAlt: `${title} recipe`,
+        publishedAt: published ? new Date() : null,
         ingredients: {
-          deleteMany: {},
-          create: body.ingredients.map((ing: any, index: number) => ({
+          create: ingredients.map((ing: any, index: number) => ({
             amount: ing.amount,
             unit: ing.unit,
             item: ing.item,
@@ -110,21 +137,39 @@ export async function PUT(
           })),
         },
         instructions: {
-          deleteMany: {},
-          create: body.instructions.map((inst: any, index: number) => ({
+          create: instructions.map((inst: any, index: number) => ({
             step: index + 1,
             title: inst.title,
             description: inst.description,
             time: inst.time,
           })),
         },
-        tips: {
-          deleteMany: {},
-          create: body.tips?.map((tip: string, index: number) => ({
+        tips: tips ? {
+          create: tips.map((tip: string, index: number) => ({
             content: tip,
             order: index,
-          })) || [],
-        },
+          })),
+        } : undefined,
+        nutrition: nutrition ? {
+          create: {
+            calories: parseInt(nutrition.calories),
+            protein: nutrition.protein,
+            carbs: nutrition.carbs,
+            fat: nutrition.fat,
+            fiber: nutrition.fiber,
+            sugar: nutrition.sugar,
+            sodium: nutrition.sodium,
+          },
+        } : undefined,
+        tags: tags ? {
+          connectOrCreate: tags.map((tagName: string) => ({
+            where: { name: tagName },
+            create: {
+              name: tagName,
+              slug: tagName.toLowerCase().replace(/\s+/g, '-'),
+            },
+          })),
+        } : undefined,
       },
       include: {
         ingredients: true,
@@ -135,31 +180,11 @@ export async function PUT(
       },
     });
     
-    return NextResponse.json(updatedRecipe);
+    return NextResponse.json(recipe, { status: 201 });
   } catch (error) {
-    console.error('Error updating recipe:', error);
+    console.error('Error creating recipe:', error);
     return NextResponse.json(
-      { error: 'Failed to update recipe' },
-      { status: 500 }
-    );
-  }
-}
-
-// DELETE /api/recipes/[slug] - Delete a recipe
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { slug: string } }
-) {
-  try {
-    await prisma.recipe.delete({
-      where: { slug: params.slug },
-    });
-    
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Error deleting recipe:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete recipe' },
+      { error: 'Failed to create recipe' },
       { status: 500 }
     );
   }

@@ -103,7 +103,17 @@ const RecipeForm = ({ onClose }: { onClose: () => void }) => {
           {/* Basic Info */}
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Category</label>="block text-sm font-medium mb-2">Category</label>
+              <label className="block text-sm font-medium mb-2">Title</label>
+              <input
+                type="text"
+                required
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="w-full px-4 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Category</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
@@ -380,14 +390,4 @@ export default function RecipeAdminPage() {
       {showForm && <RecipeForm onClose={() => setShowForm(false)} />}
     </div>
   );
-}="block text-sm font-medium mb-2">Title</label>
-              <input
-                type="text"
-                required
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className
+}

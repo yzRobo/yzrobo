@@ -4,6 +4,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { FaClock, FaFire, FaUsers, FaStar } from 'react-icons/fa';
 import { Recipe } from '@/types/recipe';
 import { getDifficultyColor, getCategoryIcon } from '@/lib/recipes';
@@ -15,6 +16,11 @@ interface RecipeCardProps {
 }
 
 export default function RecipeCard({ recipe, index = 0, featured = false }: RecipeCardProps) {
+  const router = useRouter();
+  
+  // Debug log
+  console.log('Recipe rating:', recipe.rating, 'Type:', typeof recipe.rating);
+  
   const cardVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
@@ -28,16 +34,28 @@ export default function RecipeCard({ recipe, index = 0, featured = false }: Reci
     }
   };
 
+  const handleClick = () => {
+    console.log('Card clicked!', recipe.slug);
+    router.push(`/cooking/${recipe.slug}`);
+  };
+
   return (
     <motion.article
       variants={cardVariants}
       initial="hidden"
       animate="visible"
       whileHover={{ y: -5, transition: { duration: 0.2 } }}
-      className={`group ${featured ? 'md:col-span-2 lg:col-span-1' : ''}`}
+      className={`group cursor-pointer ${featured ? 'md:col-span-2 lg:col-span-1' : ''}`}
+      onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          handleClick();
+        }
+      }}
     >
-      <Link href={`/cooking/${recipe.slug}`} className="block h-full">
-        <div className="relative h-full bg-black/20 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden hover:border-[var(--accent-primary)]/50 transition-all duration-300">
+      <div className="relative h-full bg-black/20 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden hover:border-[var(--accent-primary)]/50 transition-all duration-300">
           {/* Image section */}
           <div className="relative aspect-[4/3] bg-gradient-to-br from-[var(--surface)] to-black/50 overflow-hidden">
             {recipe.heroImage ? (
@@ -56,8 +74,8 @@ export default function RecipeCard({ recipe, index = 0, featured = false }: Reci
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
             
             {/* Category badge */}
-            <div className="absolute top-4 left-4 px-3 py-1 bg-black/50 backdrop-blur-sm rounded-full text-xs font-medium text-white">
-              {recipe.cuisine || recipe.category}
+            <div className="absolute top-4 left-4 px-3 py-1 bg-black/50 backdrop-blur-sm rounded-full text-xs font-medium text-white capitalize">
+              {recipe.category}
             </div>
             
             {/* Featured badge */}
@@ -68,7 +86,7 @@ export default function RecipeCard({ recipe, index = 0, featured = false }: Reci
             )}
             
             {/* Rating */}
-            {recipe.rating && (
+            {recipe.rating !== undefined && recipe.rating > 0 && (
               <div className="absolute bottom-4 left-4 flex items-center gap-1 text-yellow-400">
                 <FaStar className="w-4 h-4" />
                 <span className="text-sm font-medium text-white">{recipe.rating}</span>
@@ -119,7 +137,6 @@ export default function RecipeCard({ recipe, index = 0, featured = false }: Reci
             )}
           </div>
         </div>
-      </Link>
     </motion.article>
   );
 }

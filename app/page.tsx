@@ -118,7 +118,7 @@ export default function ModernHomepage() {
               What I Do
             </h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Exploring the intersection of technology and creativity wihtin my various hobbies and interests.
+              Exploring the intersection of technology and creativity within my various hobbies and interests.
             </p>
           </motion.div>
 
