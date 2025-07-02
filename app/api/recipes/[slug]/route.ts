@@ -1,16 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-type RouteContext = {
-    params: {
-        slug: string;
-    };
-};
-
 // GET /api/recipes/[slug] - Get a single recipe
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { slug: string } }
+) {
   try {
-    const { slug } = context.params;
+    const { slug } = params;
     const recipe = await prisma.recipe.findUnique({
       where: { slug },
       include: {
@@ -48,9 +45,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
 }
 
 // PUT /api/recipes/[slug] - Update a recipe
-export async function PUT(request: NextRequest, context: RouteContext) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { slug: string } }
+) {
   try {
-    const { slug } = context.params;
+    const { slug } = params;
     const body = await request.json();
     
     const existingRecipe = await prisma.recipe.findUnique({
@@ -119,9 +119,12 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 }
 
 // DELETE /api/recipes/[slug] - Delete a recipe
-export async function DELETE(request: NextRequest, context: RouteContext) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { slug: string } }
+) {
   try {
-    const { slug } = context.params;
+    const { slug } = params;
     await prisma.recipe.delete({
       where: { slug },
     });
