@@ -2,7 +2,6 @@
 import { MetadataRoute } from 'next';
 import { prisma } from '@/lib/prisma';
 
-// Since your vehicle data is hardcoded in the /auto page, we'll list the slugs here.
 const vehicleSlugs = [
   '2006-yamaha-r6',
   '2014-yamaha-mt09',
@@ -14,7 +13,6 @@ const vehicleSlugs = [
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://yzrobo.com';
 
-  // 1. Get all published recipe pages dynamically from the database
   const recipes = await prisma.recipe.findMany({
     where: { published: true },
     select: {
@@ -23,7 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   });
 
-  // FIX: Added an explicit type for the 'recipe' parameter here
+  // Correctly typing the 'recipe' parameter in the map function
   const recipeUrls = recipes.map((recipe: { slug: string; updatedAt: Date | null }) => ({
     url: `${baseUrl}/cooking/${recipe.slug}`,
     lastModified: recipe.updatedAt || new Date(),
@@ -31,7 +29,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  // 2. Create URLs for the static vehicle pages
   const vehicleUrls = vehicleSlugs.map((slug) => ({
     url: `${baseUrl}/auto/${slug}`,
     lastModified: new Date(),
@@ -39,8 +36,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  // 3. Define all other static pages
-  const staticUrls = [
+  // Explicitly typing the staticUrls array to satisfy the Sitemap type
+  const staticUrls: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       lastModified: new Date(),
@@ -85,6 +82,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // 4. Combine all URLs and return
   return [...staticUrls, ...recipeUrls, ...vehicleUrls];
 }
