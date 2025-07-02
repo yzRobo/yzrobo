@@ -1,13 +1,15 @@
+// // app/api/recipes/[slug]/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 // GET /api/recipes/[slug] - Get a single recipe
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: { slug: string } }
 ) {
   try {
-    const { slug } = params;
+    const { slug } = context.params;
     const recipe = await prisma.recipe.findUnique({
       where: { slug },
       include: {
@@ -47,10 +49,10 @@ export async function GET(
 // PUT /api/recipes/[slug] - Update a recipe
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: { slug: string } }
 ) {
   try {
-    const { slug } = params;
+    const { slug } = context.params;
     const body = await request.json();
     
     const existingRecipe = await prisma.recipe.findUnique({
@@ -121,10 +123,10 @@ export async function PUT(
 // DELETE /api/recipes/[slug] - Delete a recipe
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: { slug: string } }
 ) {
   try {
-    const { slug } = params;
+    const { slug } = context.params;
     await prisma.recipe.delete({
       where: { slug },
     });
