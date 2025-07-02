@@ -1,15 +1,16 @@
-// // app/api/recipes/[slug]/route.ts
+// app/api/recipes/[slug]/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { put } from '@vercel/blob';
 
 // GET /api/recipes/[slug] - Get a single recipe
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ slug: string }> } // The params object is now a Promise
+  context: { params: Promise<{ slug: string }> } // CORRECTED TYPE
 ) {
   try {
-    const { slug } = await context.params; // We must now "await" the params
+    const { slug } = await context.params; // CORRECTED WITH AWAIT
     const recipe = await prisma.recipe.findUnique({
       where: { slug },
       include: {
@@ -49,10 +50,10 @@ export async function GET(
 // PUT /api/recipes/[slug] - Update a recipe
 export async function PUT(
   request: NextRequest,
-  context: { params: Promise<{ slug: string }> }
+  context: { params: Promise<{ slug: string }> } // CORRECTED TYPE
 ) {
   try {
-    const { slug } = await context.params;
+    const { slug } = await context.params; // CORRECTED WITH AWAIT
     const body = await request.json();
     
     const existingRecipe = await prisma.recipe.findUnique({
@@ -61,6 +62,32 @@ export async function PUT(
     
     if (!existingRecipe) {
       return NextResponse.json({ error: 'Recipe not found' }, { status: 404 });
+    }
+
+    const dataToUpdate: any = {};
+
+    if (body.heroImage && body.heroImage.startsWith('data:')) {
+      const base64Data = body.heroImage.split(',')[1];
+      const buffer = Buffer.from(base64Data, 'base64');
+      const filename = `recipes/${slug}-hero-${Date.now()}.jpg`;
+      const blob = await put(filename, buffer, { access: 'public', contentType: 'image/jpeg' });
+      dataToUpdate.heroImage = blob.url;
+      dataToUpdate.heroImageAlt = `${body.title} - finished dish`;
+    } else if (body.heroImage === null) {
+      dataToUpdate.heroImage = null;
+      dataToUpdate.heroImageAlt = null;
+    }
+
+    if (body.ingredientsImage && body.ingredientsImage.startsWith('data:')) {
+      const base64Data = body.ingredientsImage.split(',')[1];
+      const buffer = Buffer.from(base64Data, 'base64');
+      const filename = `recipes/${slug}-ingredients-${Date.now()}.jpg`;
+      const blob = await put(filename, buffer, { access: 'public', contentType: 'image/jpeg' });
+      dataToUpdate.ingredientsImage = blob.url;
+      dataToUpdate.ingredientsImageAlt = `Ingredients for ${body.title}`;
+    } else if (body.ingredientsImage === null) {
+      dataToUpdate.ingredientsImage = null;
+      dataToUpdate.ingredientsImageAlt = null;
     }
     
     const updatedRecipe = await prisma.recipe.update({
@@ -78,7 +105,9 @@ export async function PUT(
         published: body.published,
         publishedAt: body.published && !existingRecipe.publishedAt 
           ? new Date() 
-          : existingRecipe.publishedAt,
+          : (body.published === false ? null : existingRecipe.publishedAt),
+        thumbnailDisplay: body.thumbnailDisplay,
+        ...dataToUpdate,
         ingredients: {
           deleteMany: {},
           create: body.ingredients.map((ing: any, index: number) => ({
@@ -123,10 +152,10 @@ export async function PUT(
 // DELETE /api/recipes/[slug] - Delete a recipe
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ slug: string }> }
+  context: { params: Promise<{ slug: string }> } // CORRECTED TYPE
 ) {
   try {
-    const { slug } = await context.params;
+    const { slug } = await context.params; // CORRECTED WITH AWAIT
     await prisma.recipe.delete({
       where: { slug },
     });

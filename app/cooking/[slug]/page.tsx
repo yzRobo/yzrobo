@@ -1,3 +1,4 @@
+// app/cooking/[slug]/page.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -122,15 +123,17 @@ export default function RecipeDetailPage() {
     <div className="min-h-screen bg-black text-white">
       <Navigation />
       
+      {/* --- UPDATED HERO SECTION --- */}
       <section className="relative pt-24 pb-12 md:pt-32 md:pb-16">
-        {recipe.heroImage && (
+        {/* Use the new ingredientsImage for the background */}
+        {recipe.ingredientsImage && (
           <div className="absolute inset-0 z-0">
             <img 
-              src={recipe.heroImage} 
-              alt={recipe.heroImageAlt || recipe.title}
-              className="w-full h-full object-cover opacity-100"
+              src={recipe.ingredientsImage} 
+              alt={recipe.ingredientsImageAlt || `Ingredients for ${recipe.title}`}
+              className="w-full h-full object-cover opacity-80"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black" />
           </div>
         )}
         
@@ -233,6 +236,26 @@ export default function RecipeDetailPage() {
           </div>
         </div>
       </section>
+
+      {/* --- DEDICATED IMAGE SECTION --- */}
+      {/* Use the original heroImage for the finished dish */}
+      {recipe.heroImage && (
+        <section className="container mx-auto px-6 mt-8 mb-12 md:mb-16">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.6 }}
+                className="max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl bg-white/5"
+            >
+                <img
+                    src={recipe.heroImage}
+                    alt={recipe.heroImageAlt || `Finished dish of ${recipe.title}`}
+                    className="w-full aspect-video object-cover"
+                />
+            </motion.div>
+        </section>
+      )}
+
 
       <section className="py-12 md:py-16">
         <div className="container mx-auto px-6">

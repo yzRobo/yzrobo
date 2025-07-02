@@ -1,10 +1,11 @@
+// /app/components/RecipeCard.tsx
 'use client';
 
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { FaClock, FaFire, FaUsers, FaStar } from 'react-icons/fa';
-import { Recipe, Tag } from '@/types/recipe';
+import { FaClock, FaStar, FaUsers } from 'react-icons/fa';
+import { Recipe, ThumbnailDisplay } from '@/types/recipe';
 import { getDifficultyColor } from '@/lib/recipes';
 
 interface RecipeCardProps {
@@ -15,7 +16,17 @@ interface RecipeCardProps {
 
 export default function RecipeCard({ recipe, index = 0, featured = false }: RecipeCardProps) {
   const router = useRouter();
-  
+
+  // --- NEW LOGIC TO CHOOSE THE THUMBNAIL ---
+  const thumbnailUrl = (recipe.thumbnailDisplay === ThumbnailDisplay.INGREDIENTS && recipe.ingredientsImage)
+    ? recipe.ingredientsImage
+    : recipe.heroImage;
+
+  const thumbnailAlt = (recipe.thumbnailDisplay === ThumbnailDisplay.INGREDIENTS && recipe.ingredientsImage)
+    ? recipe.ingredientsImageAlt
+    : recipe.heroImageAlt;
+  // --- END OF NEW LOGIC ---
+
   const cardVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
@@ -51,10 +62,10 @@ export default function RecipeCard({ recipe, index = 0, featured = false }: Reci
     >
       <div className="relative h-full bg-black/20 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden hover:border-[var(--accent-primary)]/50 transition-all duration-300">
           <div className="relative aspect-[4/3] bg-gradient-to-br from-[var(--surface)] to-black/50 overflow-hidden">
-            {recipe.heroImage ? (
+            {thumbnailUrl ? (
               <img
-                src={recipe.heroImage}
-                alt={recipe.heroImageAlt || recipe.title}
+                src={thumbnailUrl}
+                alt={thumbnailAlt || recipe.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
             ) : (

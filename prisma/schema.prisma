@@ -9,31 +9,36 @@ datasource db {
 }
 
 model Recipe {
-  id           String      @id @default(cuid())
-  slug         String      @unique
-  title        String
-  description  String
-  cuisine      String?
-  prepTime     String
-  cookTime     String
-  totalTime    String
-  servings     Int
-  difficulty   Difficulty
-  featured     Boolean     @default(false)
-  published    Boolean     @default(false)
-  heroImage    String?
-  heroImageAlt String?
-  authorId     String?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  publishedAt  DateTime?
+  id                  String             @id @default(cuid())
+  slug                String             @unique
+  title               String
+  description         String
+  cuisine             String?
+  prepTime            String
+  cookTime            String
+  totalTime           String
+  servings            Int
+  difficulty          Difficulty
+  featured            Boolean            @default(false)
+  published           Boolean            @default(false)
+  heroImage           String?
+  heroImageAlt        String?
+  ingredientsImage    String?
+  ingredientsImageAlt String?
+  
+  // --- ADD THIS LINE ---
+  thumbnailDisplay    ThumbnailDisplay   @default(HERO)
 
-  ingredients  Ingredient[]
-  instructions Instruction[]
-  nutrition    Nutrition?
-  reviews      Review[]
-  tips         Tip[]
-  tags         Tag[]         @relation("RecipeToTag")
+  authorId            String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  publishedAt         DateTime?
+  ingredients         Ingredient[]
+  instructions        Instruction[]
+  nutrition           Nutrition?
+  reviews             Review[]
+  tips                Tip[]
+  tags                Tag[]              @relation("RecipeToTag")
 
   @@index([slug])
   @@index([featured])
@@ -152,4 +157,9 @@ enum Difficulty {
   easy
   medium
   hard
+}
+
+enum ThumbnailDisplay {
+  HERO
+  INGREDIENTS
 }

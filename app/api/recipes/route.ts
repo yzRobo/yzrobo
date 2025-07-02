@@ -86,6 +86,7 @@ export async function POST(request: NextRequest) {
       nutrition,
       tags,
       heroImage,
+      ingredientsImage, 
     } = body;
     
     const slug = title
@@ -93,6 +94,7 @@ export async function POST(request: NextRequest) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
     
+    // Handle Finished Dish Image (heroImage)
     let heroImageUrl = null;
     if (heroImage && typeof heroImage === 'string' && heroImage.startsWith('data:')) {
       const base64Data = heroImage.split(',')[1];
@@ -106,6 +108,22 @@ export async function POST(request: NextRequest) {
       
       heroImageUrl = blob.url;
     }
+
+    // --- HANDLE INGREDIENTS IMAGE UPLOAD ---
+    let ingredientsImageUrl = null;
+    if (ingredientsImage && typeof ingredientsImage === 'string' && ingredientsImage.startsWith('data:')) {
+      const base64Data = ingredientsImage.split(',')[1];
+      const buffer = Buffer.from(base64Data, 'base64');
+      const filename = `recipes/${slug}-ingredients-${Date.now()}.jpg`; // Different filename
+      
+      const blob = await put(filename, buffer, {
+        access: 'public',
+        contentType: 'image/jpeg',
+      });
+      
+      ingredientsImageUrl = blob.url;
+    }
+    // --- END OF CODE BLOCK ---
     
     const recipe = await prisma.recipe.create({
       data: {
@@ -121,7 +139,9 @@ export async function POST(request: NextRequest) {
         featured: featured || false,
         published: published || false,
         heroImage: heroImageUrl,
-        heroImageAlt: `${title} recipe`,
+        heroImageAlt: `${title} - finished dish`, // Updated Alt Text
+        ingredientsImage: ingredientsImageUrl,
+        ingredientsImageAlt: `Ingredients for ${title}`,
         publishedAt: published ? new Date() : null,
         ingredients: {
           create: ingredients.map((ing: any, index: number) => ({

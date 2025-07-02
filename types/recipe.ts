@@ -1,4 +1,4 @@
-// types/recipe.ts
+// /types/recipe.ts
 
 export interface Tip {
   id: string;
@@ -10,6 +10,12 @@ export interface Tag {
   id: string;
   name: string;
   slug: string;
+}
+
+// CORRECTED: Added 'export' to the enum
+export enum ThumbnailDisplay {
+  HERO = 'HERO',
+  INGREDIENTS = 'INGREDIENTS',
 }
 
 export interface Recipe {
@@ -27,6 +33,12 @@ export interface Recipe {
   published?: boolean;
   heroImage?: string | null;
   heroImageAlt?: string | null;
+  ingredientsImage?: string | null;
+  ingredientsImageAlt?: string | null;
+  
+  // CORRECTED: Added the property to the interface
+  thumbnailDisplay?: ThumbnailDisplay;
+
   ingredients: Ingredient[];
   instructions: Instruction[];
   tips?: Tip[];
@@ -85,7 +97,7 @@ export interface RecipeReview {
 }
 
 export interface RecipeCollection {
-  id: string;
+  id:string;
   name: string;
   description: string;
   recipes: Recipe[];
