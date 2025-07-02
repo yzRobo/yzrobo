@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   try {
-    const { slug } = await params;
+    const { slug } = params; // Corrected line: removed await
     const recipe = await prisma.recipe.findUnique({
       where: { slug },
       include: {
