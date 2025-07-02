@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { 
   FaClock, 
   FaFire, 
@@ -13,10 +13,13 @@ import {
   FaPrint,
   FaShare,
   FaStar,
-  FaGlobe
+  FaGlobe,
+  FaExclamationTriangle
 } from 'react-icons/fa';
 import Navigation from '../../components/Navigation';
 import { Recipe } from '@/types/recipe';
+import { PageLoadingSpinner } from '../../components/LoadingStates';
+import ErrorBoundary from '../../components/ErrorBoundary';
 
 // Ingredient Item Component
 const IngredientItem = ({ ingredient, index }: { ingredient: any; index: number }) => (
@@ -67,10 +70,51 @@ const ActionButton = ({ icon, label, onClick }: { icon: React.ReactNode; label: 
   </motion.button>
 );
 
-export default function RecipeDetailPage() {
+// Error State Component
+const RecipeErrorState = ({ error }: { error: string }) => {
+  const router = useRouter();
+  
+  return (
+    <div className="min-h-screen bg-black text-white">
+      <Navigation />
+      <div className="flex flex-col items-center justify-center h-[80vh] px-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center max-w-md"
+        >
+          <FaExclamationTriangle className="text-6xl text-[var(--accent-primary)] mx-auto mb-4" />
+          <h1 className="text-4xl font-bold mb-4">Recipe Not Found</h1>
+          <p className="text-gray-400 mb-8">{error}</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => router.back()}
+              className="px-6 py-3 bg-white/10 rounded-full font-medium hover:bg-white/20 transition-colors"
+            >
+              Go Back
+            </motion.button>
+            <motion.a
+              href="/cooking"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-6 py-3 bg-[var(--accent-primary)] rounded-full font-medium"
+            >
+              Browse All Recipes
+            </motion.a>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+function RecipeDetailContent() {
   const params = useParams();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (params.slug) {
@@ -80,58 +124,84 @@ export default function RecipeDetailPage() {
 
   const fetchRecipe = async (slug: string) => {
     try {
+      setLoading(true);
+      setError(null);
+      
       const response = await fetch(`/api/recipes/${slug}`);
-      if (response.ok) {
-        const data = await response.json();
-        setRecipe(data);
-      } else {
-        console.error('Recipe not found');
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          setError('This recipe could not be found. It may have been removed or the link might be incorrect.');
+        } else {
+          setError('Unable to load this recipe. Please try again later.');
+        }
+        return;
       }
+      
+      const data = await response.json();
+      setRecipe(data);
     } catch (error) {
       console.error('Error fetching recipe:', error);
+      setError('Something went wrong while loading the recipe. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleShare = async () => {
+    if (!recipe) return;
+    
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: recipe.title,
+          text: recipe.description,
+          url: window.location.href,
+        });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        // You could add a toast notification here
+        alert('Link copied to clipboard!');
+      }
+    } catch (err) {
+      console.log('Error sharing:', err);
+    }
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white">
         <Navigation />
-        <div className="flex items-center justify-center h-[80vh]">
-          <div className="animate-pulse text-2xl">Loading recipe...</div>
-        </div>
+        <PageLoadingSpinner />
       </div>
     );
   }
 
-  if (!recipe) {
-    return (
-      <div className="min-h-screen bg-black text-white">
-        <Navigation />
-        <div className="flex flex-col items-center justify-center h-[80vh]">
-          <h1 className="text-4xl font-bold mb-4">Recipe Not Found</h1>
-          <a href="/cooking" className="text-[var(--accent-primary)] hover:underline">
-            ← Back to recipes
-          </a>
-        </div>
-      </div>
-    );
+  if (error || !recipe) {
+    return <RecipeErrorState error={error || 'Recipe not found'} />;
   }
 
   return (
     <div className="min-h-screen bg-black text-white">
       <Navigation />
       
-      {/* --- UPDATED HERO SECTION --- */}
+      {/* Hero Section */}
       <section className="relative pt-24 pb-12 md:pt-32 md:pb-16">
-        {/* Use the new ingredientsImage for the background */}
+        {/* Use the ingredientsImage for the background */}
         {recipe.ingredientsImage && (
           <div className="absolute inset-0 z-0">
             <img 
               src={recipe.ingredientsImage} 
               alt={recipe.ingredientsImageAlt || `Ingredients for ${recipe.title}`}
               className="w-full h-full object-cover opacity-80"
+              onError={(e) => {
+                // Hide image if it fails to load
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black" />
           </div>
@@ -210,35 +280,19 @@ export default function RecipeDetailPage() {
               <ActionButton 
                 icon={<FaPrint />} 
                 label="Print" 
-                onClick={() => window.print()} 
+                onClick={handlePrint} 
               />
               <ActionButton 
                 icon={<FaShare />} 
                 label="Share" 
-                onClick={async () => {
-                  if (navigator.share) {
-                    try {
-                      await navigator.share({
-                        title: recipe.title,
-                        text: recipe.description,
-                        url: window.location.href,
-                      });
-                    } catch (err) {
-                      console.log('Error sharing:', err);
-                    }
-                  } else {
-                    navigator.clipboard.writeText(window.location.href);
-                    alert('Link copied to clipboard!');
-                  }
-                }}
+                onClick={handleShare}
               />
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* --- DEDICATED IMAGE SECTION --- */}
-      {/* Use the original heroImage for the finished dish */}
+      {/* Main Image Section */}
       {recipe.heroImage && (
         <section className="container mx-auto px-6 mt-8 mb-12 md:mb-16">
             <motion.div
@@ -251,12 +305,16 @@ export default function RecipeDetailPage() {
                     src={recipe.heroImage}
                     alt={recipe.heroImageAlt || `Finished dish of ${recipe.title}`}
                     className="w-full aspect-video object-cover"
+                    onError={(e) => {
+                      // Hide image if it fails to load
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
                 />
             </motion.div>
         </section>
       )}
 
-
+      {/* Recipe Content */}
       <section className="py-12 md:py-16">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-12">
@@ -339,5 +397,13 @@ export default function RecipeDetailPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function RecipeDetailPage() {
+  return (
+    <ErrorBoundary>
+      <RecipeDetailContent />
+    </ErrorBoundary>
   );
 }

@@ -10,12 +10,16 @@ import {
   FaCookie,
   FaDrumstickBite,
   FaConciergeBell,
-  FaTag
+  FaTag,
+  FaExclamationTriangle
 } from 'react-icons/fa';
 import { MdOutdoorGrill, MdLocalPizza } from "react-icons/md";
 import { FaBowlRice } from "react-icons/fa6";
 import Navigation from '../components/Navigation';
 import RecipeCard from '../components/RecipeCard';
+import RecipeSearch from '../components/RecipeSearch';
+import { RecipeGridSkeleton } from '../components/LoadingStates';
+import ErrorBoundary from '../components/ErrorBoundary';
 import { Recipe, Tag } from '@/types/recipe';
 
 // Helper to get an icon for a tag
@@ -60,23 +64,47 @@ const FilterButton = ({
   </motion.button>
 );
 
-export default function CookingPage() {
+// Error State Component
+const ErrorState = ({ error, retry }: { error: string; retry: () => void }) => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    className="text-center py-20"
+  >
+    <FaExclamationTriangle className="text-6xl text-red-500 mx-auto mb-4" />
+    <p className="text-xl text-gray-400 mb-2">Oops! Something went wrong</p>
+    <p className="text-gray-500 mb-6">{error}</p>
+    <motion.button
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={retry}
+      className="px-6 py-3 bg-[var(--accent-primary)] rounded-full font-medium"
+    >
+      Try Again
+    </motion.button>
+  </motion.div>
+);
+
+function CookingPageContent() {
   const [activeTagSlug, setActiveTagSlug] = useState('all');
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch all available tags once on component mount
   useEffect(() => {
     const fetchTags = async () => {
       try {
         const response = await fetch('/api/tags');
-        if (response.ok) {
-          const data = await response.json();
-          setAvailableTags(data);
+        if (!response.ok) {
+          throw new Error('Failed to load tags');
         }
+        const data = await response.json();
+        setAvailableTags(data);
       } catch (error) {
         console.error('Error fetching tags:', error);
+        // Don't show error for tags, just log it
       }
     };
     fetchTags();
@@ -87,11 +115,18 @@ export default function CookingPage() {
     const fetchRecipes = async () => {
       try {
         setLoading(true);
+        setError(null);
         const response = await fetch(`/api/recipes?tag=${activeTagSlug}&published=true`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to load recipes');
+        }
+        
         const data = await response.json();
         setRecipes(data);
       } catch (error) {
         console.error('Error fetching recipes:', error);
+        setError('Unable to load recipes. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -103,6 +138,15 @@ export default function CookingPage() {
     { slug: 'all', name: 'All Recipes', icon: <FaUtensils /> },
     ...availableTags.map(tag => ({ ...tag, icon: getTagIcon(tag.slug) }))
   ];
+
+  const handleRetry = () => {
+    setError(null);
+    setLoading(true);
+    // Trigger re-fetch by updating the tag
+    const currentTag = activeTagSlug;
+    setActiveTagSlug('');
+    setTimeout(() => setActiveTagSlug(currentTag), 0);
+  };
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -145,15 +189,21 @@ export default function CookingPage() {
       {/* Filter Section */}
       <section className="py-8 border-y border-white/5 sticky top-[88px] z-30 bg-black/80 backdrop-blur-xl">
         <div className="container mx-auto px-6">
-          <div className="flex flex-wrap gap-3 justify-center">
-            {filterButtons.map((tag) => (
-              <FilterButton
-                key={tag.slug}
-                tag={tag}
-                active={activeTagSlug === tag.slug}
-                onClick={() => setActiveTagSlug(tag.slug)}
-              />
-            ))}
+          <div className="flex items-center justify-center gap-4">
+            <div className="flex flex-wrap gap-3 justify-center">
+              {filterButtons.map((tag) => (
+                <FilterButton
+                  key={tag.slug}
+                  tag={tag}
+                  active={activeTagSlug === tag.slug}
+                  onClick={() => setActiveTagSlug(tag.slug)}
+                />
+              ))}
+            </div>
+            {/* Search button - visible on all screen sizes */}
+            <div className="flex-shrink-0">
+              <RecipeSearch />
+            </div>
           </div>
         </div>
       </section>
@@ -161,10 +211,10 @@ export default function CookingPage() {
       {/* Recipes Grid */}
       <section className="py-16 md:py-20">
         <div className="container mx-auto px-6">
-          {loading ? (
-            <div className="text-center py-20">
-              <div className="animate-pulse text-2xl">Loading recipes...</div>
-            </div>
+          {error ? (
+            <ErrorState error={error} retry={handleRetry} />
+          ) : loading ? (
+            <RecipeGridSkeleton count={6} />
           ) : (
             <AnimatePresence mode="wait">
               <motion.div
@@ -181,7 +231,7 @@ export default function CookingPage() {
             </AnimatePresence>
           )}
 
-          {!loading && recipes.length === 0 && (
+          {!loading && !error && recipes.length === 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -235,5 +285,13 @@ export default function CookingPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function CookingPage() {
+  return (
+    <ErrorBoundary>
+      <CookingPageContent />
+    </ErrorBoundary>
   );
 }
