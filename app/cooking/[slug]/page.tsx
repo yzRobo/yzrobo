@@ -128,9 +128,9 @@ export default function RecipeDetailPage() {
             <img 
               src={recipe.heroImage} 
               alt={recipe.heroImageAlt || recipe.title}
-              className="w-full h-full object-cover opacity-30"
+              className="w-full h-full object-cover opacity-100"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/70 to-black" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black" />
           </div>
         )}
         
