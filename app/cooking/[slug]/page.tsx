@@ -1,4 +1,3 @@
-// app/cooking/[slug]/page.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -12,7 +11,8 @@ import {
   FaArrowLeft,
   FaPrint,
   FaShare,
-  FaStar
+  FaStar,
+  FaGlobe
 } from 'react-icons/fa';
 import Navigation from '../../components/Navigation';
 import { Recipe } from '@/types/recipe';
@@ -122,9 +122,7 @@ export default function RecipeDetailPage() {
     <div className="min-h-screen bg-black text-white">
       <Navigation />
       
-      {/* Hero Section */}
       <section className="relative pt-24 pb-12 md:pt-32 md:pb-16">
-        {/* Hero Image */}
         {recipe.heroImage && (
           <div className="absolute inset-0 z-0">
             <img 
@@ -139,7 +137,6 @@ export default function RecipeDetailPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-[var(--surface)] to-transparent opacity-50" />
         
         <div className="container mx-auto px-6 relative z-10">
-          {/* Back button */}
           <motion.a
             href="/cooking"
             initial={{ opacity: 0, x: -20 }}
@@ -150,7 +147,6 @@ export default function RecipeDetailPage() {
             Back to Recipes
           </motion.a>
 
-          {/* Title and meta */}
           <div className="max-w-4xl">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
@@ -170,12 +166,11 @@ export default function RecipeDetailPage() {
               {recipe.description}
             </motion.p>
 
-            {/* Recipe meta info */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="flex flex-wrap gap-6 text-sm mb-8"
+              className="flex flex-wrap gap-x-6 gap-y-3 text-sm mb-8"
             >
               <div className="flex items-center gap-2">
                 <FaClock className="text-[var(--accent-primary)]" />
@@ -189,6 +184,12 @@ export default function RecipeDetailPage() {
                 <FaFire className="text-[var(--accent-primary)]" />
                 <span className="capitalize">{recipe.difficulty}</span>
               </div>
+              {recipe.cuisine && (
+                <div className="flex items-center gap-2">
+                  <FaGlobe className="text-[var(--accent-primary)]" />
+                  <span>{recipe.cuisine}</span>
+                </div>
+              )}
               {recipe.rating && recipe.rating > 0 && (
                 <div className="flex items-center gap-2">
                   <FaStar className="text-yellow-400" />
@@ -197,7 +198,6 @@ export default function RecipeDetailPage() {
               )}
             </motion.div>
 
-            {/* Action buttons */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -224,7 +224,6 @@ export default function RecipeDetailPage() {
                       console.log('Error sharing:', err);
                     }
                   } else {
-                    // Fallback: copy to clipboard
                     navigator.clipboard.writeText(window.location.href);
                     alert('Link copied to clipboard!');
                   }
@@ -235,11 +234,9 @@ export default function RecipeDetailPage() {
         </div>
       </section>
 
-      {/* Recipe Content */}
       <section className="py-12 md:py-16">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-12">
-            {/* Ingredients */}
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -254,7 +251,6 @@ export default function RecipeDetailPage() {
               </ul>
             </motion.div>
 
-            {/* Instructions */}
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -268,7 +264,6 @@ export default function RecipeDetailPage() {
                 ))}
               </div>
 
-              {/* Tips */}
               {recipe.tips && recipe.tips.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -288,7 +283,6 @@ export default function RecipeDetailPage() {
                 </motion.div>
               )}
 
-              {/* Nutrition */}
               {recipe.nutrition && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}

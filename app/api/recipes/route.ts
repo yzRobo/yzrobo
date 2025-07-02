@@ -3,26 +3,30 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { put } from '@vercel/blob';
 
-// GET /api/recipes - Fetch all recipes or filtered recipes
+// GET /api/recipes - Fetch all recipes or filtered by tag
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const category = searchParams.get('category');
+    const tagSlug = searchParams.get('tag');
     const featured = searchParams.get('featured');
     const published = searchParams.get('published');
+    const all = searchParams.get('all');
     
     const where: any = {};
     
-    if (category && category !== 'all') {
-      where.category = category;
+    if (tagSlug && tagSlug !== 'all') {
+      where.tags = {
+        some: {
+          slug: tagSlug,
+        },
+      };
     }
     
     if (featured === 'true') {
       where.featured = true;
     }
     
-    // Default to only showing published recipes
-    if (published !== 'false') {
+    if (published !== 'false' && all !== 'true') {
       where.published = true;
     }
     
@@ -39,7 +43,6 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
     
-    // Calculate average rating
     const recipesWithRating = recipes.map((recipe: any) => {
       const avgRating = recipe.reviews.length > 0
         ? recipe.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / recipe.reviews.length
@@ -69,7 +72,6 @@ export async function POST(request: NextRequest) {
     const {
       title,
       description,
-      category,
       cuisine,
       prepTime,
       cookTime,
@@ -83,19 +85,16 @@ export async function POST(request: NextRequest) {
       tips,
       nutrition,
       tags,
-      heroImage, // This will be a base64 string or File
+      heroImage,
     } = body;
     
-    // Generate slug from title
     const slug = title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
     
-    // Handle image upload if provided
     let heroImageUrl = null;
     if (heroImage && typeof heroImage === 'string' && heroImage.startsWith('data:')) {
-      // Convert base64 to blob and upload
       const base64Data = heroImage.split(',')[1];
       const buffer = Buffer.from(base64Data, 'base64');
       const filename = `recipes/${slug}-hero-${Date.now()}.jpg`;
@@ -108,13 +107,11 @@ export async function POST(request: NextRequest) {
       heroImageUrl = blob.url;
     }
     
-    // Create recipe with all relations
     const recipe = await prisma.recipe.create({
       data: {
         slug,
         title,
         description,
-        category,
         cuisine,
         prepTime,
         cookTime,

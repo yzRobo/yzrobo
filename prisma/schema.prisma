@@ -5,44 +5,37 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 model Recipe {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  title       String
-  description String
-  category    Category
-  cuisine     String?
-  prepTime    String
-  cookTime    String
-  totalTime   String
-  servings    Int
-  difficulty  Difficulty
-  featured    Boolean  @default(false)
-  published   Boolean  @default(false)
-  
-  // Images stored as URLs (from Vercel Blob or local)
-  heroImage   String?
+  id           String      @id @default(cuid())
+  slug         String      @unique
+  title        String
+  description  String
+  cuisine      String?
+  prepTime     String
+  cookTime     String
+  totalTime    String
+  servings     Int
+  difficulty   Difficulty
+  featured     Boolean     @default(false)
+  published    Boolean     @default(false)
+  heroImage    String?
   heroImageAlt String?
-  
-  // Relations
-  ingredients Ingredient[]
+  authorId     String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  publishedAt  DateTime?
+
+  ingredients  Ingredient[]
   instructions Instruction[]
-  tips        Tip[]
-  nutrition   Nutrition?
-  tags        Tag[]
-  reviews     Review[]
-  
-  // Metadata
-  authorId    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  publishedAt DateTime?
-  
+  nutrition    Nutrition?
+  reviews      Review[]
+  tips         Tip[]
+  tags         Tag[]         @relation("RecipeToTag")
+
   @@index([slug])
-  @@index([category])
   @@index([featured])
 }
 
@@ -52,39 +45,36 @@ model Ingredient {
   unit     String?
   item     String
   notes    String?
-  group    String? // For grouped ingredients
+  group    String?
   order    Int
-  
-  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId String
+  recipe   Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 }
 
 model Instruction {
   id          String  @id @default(cuid())
   step        Int
   title       String?
-  description String  @db.Text
+  description String
   image       String?
   imageAlt    String?
   time        String?
-  
-  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  recipeId String
-  
+  recipeId    String
+  recipe      Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
   @@index([recipeId, step])
 }
 
 model Tip {
-  id      String @id @default(cuid())
-  content String
-  order   Int
-  
-  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  id       String @id @default(cuid())
+  content  String
+  order    Int
   recipeId String
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 }
 
 model Nutrition {
-  id       String @id @default(cuid())
+  id       String  @id @default(cuid())
   calories Int
   protein  String
   carbs    String
@@ -92,39 +82,70 @@ model Nutrition {
   fiber    String?
   sugar    String?
   sodium   String?
-  
-  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  recipeId String @unique
+  recipeId String  @unique
+  recipe   Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 }
 
 model Tag {
   id      String   @id @default(cuid())
   name    String   @unique
   slug    String   @unique
-  recipes Recipe[]
+  recipes Recipe[] @relation("RecipeToTag")
 }
 
 model Review {
   id        String   @id @default(cuid())
   rating    Int
   comment   String?
-  
-  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId  String
-  
   createdAt DateTime @default(now())
-  
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
   @@index([recipeId])
 }
 
-enum Category {
-  italian
-  bbq
-  experimental
-  dessert
-  appetizer
-  main
-  side
+model Modification {
+  id        String   @id
+  category  String
+  items     String[]
+  order     Int      @default(0)
+  vehicleId String
+  Vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+}
+
+model Spec {
+  id        String @id
+  label     String
+  value     String
+  order     Int    @default(0)
+  vehicleId String
+  Vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+}
+
+model Vehicle {
+  id            String          @id
+  slug          String          @unique
+  name          String
+  category      String
+  heroImage     String?
+  gallery       String[]
+  story         String[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime
+  Modification  Modification[]
+  Spec          Spec[]
+  VehicleUpdate VehicleUpdate[]
+}
+
+model VehicleUpdate {
+  id        String   @id
+  title     String
+  content   String
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  vehicleId String
+  Vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 }
 
 enum Difficulty {

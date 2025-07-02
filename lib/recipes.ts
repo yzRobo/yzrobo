@@ -1,5 +1,4 @@
-// lib/recipes.ts
-import { Recipe } from '@/types/recipe';
+import { Recipe, Tag } from '@/types/recipe';
 
 // Base URL for API calls - works in both client and server components
 const getBaseUrl = () => {
@@ -17,13 +16,13 @@ const getBaseUrl = () => {
 
 // Recipe fetching functions
 export async function getAllRecipes(options?: {
-  category?: string;
+  tagSlug?: string;
   featured?: boolean;
   published?: boolean;
 }): Promise<Recipe[]> {
   try {
     const params = new URLSearchParams();
-    if (options?.category) params.append('category', options.category);
+    if (options?.tagSlug && options.tagSlug !== 'all') params.append('tag', options.tagSlug);
     if (options?.featured !== undefined) params.append('featured', String(options.featured));
     if (options?.published !== undefined) params.append('published', String(options.published));
     
@@ -62,8 +61,8 @@ export async function getRecipeBySlug(slug: string): Promise<Recipe | null> {
   }
 }
 
-export async function getRecipesByCategory(category: string): Promise<Recipe[]> {
-  return getAllRecipes({ category });
+export async function getRecipesByTag(tagSlug: string): Promise<Recipe[]> {
+  return getAllRecipes({ tagSlug });
 }
 
 export async function getFeaturedRecipes(): Promise<Recipe[]> {
@@ -71,9 +70,7 @@ export async function getFeaturedRecipes(): Promise<Recipe[]> {
 }
 
 export async function searchRecipes(query: string): Promise<Recipe[]> {
-  // For now, fetch all and filter client-side
-  // Later, you can add a search endpoint to your API
-  const recipes = await getAllRecipes();
+  const recipes = await getAllRecipes({published: true});
   const lowercaseQuery = query.toLowerCase();
   
   return recipes.filter(recipe => 
@@ -101,17 +98,4 @@ export function getDifficultyColor(difficulty: Recipe['difficulty']): string {
     hard: 'text-red-400'
   };
   return colors[difficulty];
-}
-
-export function getCategoryIcon(category: Recipe['category']): string {
-  const icons = {
-    italian: '🍝',
-    bbq: '🔥',
-    experimental: '🧪',
-    dessert: '🍰',
-    appetizer: '🥟',
-    main: '🍽️',
-    side: '🥗'
-  };
-  return icons[category] || '🍴';
 }

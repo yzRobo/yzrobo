@@ -1,18 +1,16 @@
-// app/api/recipes/[slug]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// Define a type for the route's context. Note that `params` is a Promise.
 type RouteContext = {
-  params: Promise<{
-    slug: string;
-  }>;
+    params: {
+        slug: string;
+    };
 };
 
 // GET /api/recipes/[slug] - Get a single recipe
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
-    const { slug } = await context.params; // Correct: Await the params to resolve
+    const { slug } = context.params;
     const recipe = await prisma.recipe.findUnique({
       where: { slug },
       include: {
@@ -32,7 +30,6 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'Recipe not found' }, { status: 404 });
     }
     
-    // Calculate average rating
     const avgRating = recipe.reviews.length > 0
       ? recipe.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / recipe.reviews.length
       : 0;
@@ -53,12 +50,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
 // PUT /api/recipes/[slug] - Update a recipe
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
-    const { slug } = await context.params; // Correct: Await the params
+    const { slug } = context.params;
     const body = await request.json();
     
     const existingRecipe = await prisma.recipe.findUnique({
       where: { slug },
-      include: { ingredients: true, instructions: true, tips: true },
     });
     
     if (!existingRecipe) {
@@ -70,7 +66,6 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       data: {
         title: body.title,
         description: body.description,
-        category: body.category,
         cuisine: body.cuisine,
         prepTime: body.prepTime,
         cookTime: body.cookTime,
@@ -100,6 +95,16 @@ export async function PUT(request: NextRequest, context: RouteContext) {
             content: tip, order: index,
           })) || [],
         },
+        tags: body.tags ? {
+          set: [],
+          connectOrCreate: body.tags.map((tagName: string) => ({
+            where: { name: tagName },
+            create: {
+              name: tagName,
+              slug: tagName.toLowerCase().replace(/\s+/g, '-'),
+            },
+          })),
+        } : undefined,
       },
       include: {
         ingredients: true, instructions: true, tips: true, nutrition: true, tags: true,
@@ -116,7 +121,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 // DELETE /api/recipes/[slug] - Delete a recipe
 export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
-    const { slug } = await context.params; // Correct: Await the params
+    const { slug } = context.params;
     await prisma.recipe.delete({
       where: { slug },
     });

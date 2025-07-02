@@ -1,13 +1,11 @@
-// app/components/RecipeCard.tsx
 'use client';
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FaClock, FaFire, FaUsers, FaStar } from 'react-icons/fa';
-import { Recipe } from '@/types/recipe';
-import { getDifficultyColor, getCategoryIcon } from '@/lib/recipes';
+import { Recipe, Tag } from '@/types/recipe';
+import { getDifficultyColor } from '@/lib/recipes';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -17,9 +15,6 @@ interface RecipeCardProps {
 
 export default function RecipeCard({ recipe, index = 0, featured = false }: RecipeCardProps) {
   const router = useRouter();
-  
-  // Debug log
-  console.log('Recipe rating:', recipe.rating, 'Type:', typeof recipe.rating);
   
   const cardVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -35,7 +30,6 @@ export default function RecipeCard({ recipe, index = 0, featured = false }: Reci
   };
 
   const handleClick = () => {
-    console.log('Card clicked!', recipe.slug);
     router.push(`/cooking/${recipe.slug}`);
   };
 
@@ -45,7 +39,7 @@ export default function RecipeCard({ recipe, index = 0, featured = false }: Reci
       initial="hidden"
       animate="visible"
       whileHover={{ y: -5, transition: { duration: 0.2 } }}
-      className={`group cursor-pointer ${featured ? 'md:col-span-2 lg:col-span-1' : ''}`}
+      className={`group cursor-pointer`}
       onClick={handleClick}
       role="button"
       tabIndex={0}
@@ -56,7 +50,6 @@ export default function RecipeCard({ recipe, index = 0, featured = false }: Reci
       }}
     >
       <div className="relative h-full bg-black/20 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden hover:border-[var(--accent-primary)]/50 transition-all duration-300">
-          {/* Image section */}
           <div className="relative aspect-[4/3] bg-gradient-to-br from-[var(--surface)] to-black/50 overflow-hidden">
             {recipe.heroImage ? (
               <img
@@ -66,26 +59,18 @@ export default function RecipeCard({ recipe, index = 0, featured = false }: Reci
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-20">
-                {getCategoryIcon(recipe.category)}
+                🍴
               </div>
             )}
             
-            {/* Overlay gradient */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60 group-hover:opacity-75 transition-opacity duration-300" />
             
-            {/* Category badge */}
-            <div className="absolute top-4 left-4 px-3 py-1 bg-black/50 backdrop-blur-sm rounded-full text-xs font-medium text-white capitalize">
-              {recipe.category}
-            </div>
-            
-            {/* Featured badge */}
             {recipe.featured && (
               <div className="absolute top-4 right-4 px-3 py-1 bg-[var(--accent-primary)] text-white text-xs font-bold rounded-full">
                 FEATURED
               </div>
             )}
             
-            {/* Rating */}
             {recipe.rating !== undefined && recipe.rating > 0 && (
               <div className="absolute bottom-4 left-4 flex items-center gap-1 text-yellow-400">
                 <FaStar className="w-4 h-4" />
@@ -94,7 +79,6 @@ export default function RecipeCard({ recipe, index = 0, featured = false }: Reci
             )}
           </div>
 
-          {/* Content section */}
           <div className="p-6">
             <h3 className="text-xl font-bold text-white mb-2 line-clamp-1 group-hover:text-[var(--accent-primary)] transition-colors">
               {recipe.title}
@@ -104,7 +88,6 @@ export default function RecipeCard({ recipe, index = 0, featured = false }: Reci
               {recipe.description}
             </p>
 
-            {/* Meta info */}
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-4 text-gray-500">
                 <span className="flex items-center gap-1">
@@ -122,7 +105,6 @@ export default function RecipeCard({ recipe, index = 0, featured = false }: Reci
               </span>
             </div>
 
-            {/* Tags */}
             {recipe.tags && recipe.tags.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-2">
                 {recipe.tags.slice(0, 3).map((tag) => (

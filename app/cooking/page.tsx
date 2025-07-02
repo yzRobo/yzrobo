@@ -1,37 +1,47 @@
-// app/cooking/page.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaUtensils, 
-  FaClock, 
   FaFire, 
   FaLeaf,
   FaPepperHot,
   FaCookie,
-  FaPizzaSlice
+  FaDrumstickBite,
+  FaConciergeBell,
+  FaTag
 } from 'react-icons/fa';
+import { MdOutdoorGrill, MdLocalPizza } from "react-icons/md";
+import { FaBowlRice } from "react-icons/fa6";
 import Navigation from '../components/Navigation';
 import RecipeCard from '../components/RecipeCard';
-import { Recipe } from '@/types/recipe';
+import { Recipe, Tag } from '@/types/recipe';
 
-// Category configuration
-const categories = [
-  { id: 'all', name: 'All Recipes', icon: <FaUtensils /> },
-  { id: 'italian', name: 'Italian', icon: <FaPizzaSlice /> },
-  { id: 'bbq', name: 'BBQ & Smoking', icon: <FaFire /> },
-  { id: 'experimental', name: 'Experiments', icon: <FaPepperHot /> },
-  { id: 'dessert', name: 'Desserts', icon: <FaCookie /> }
-];
+// Helper to get an icon for a tag
+const getTagIcon = (slug: string) => {
+    const iconMap: { [key: string]: React.ReactNode } = {
+      'main': <FaDrumstickBite />, 'main-course': <FaDrumstickBite />,
+      'appetizer': <FaConciergeBell />, 'appetizers': <FaConciergeBell />,
+      'side': <FaLeaf />, 'side-dish': <FaLeaf />,
+      'italian': <MdLocalPizza />,
+      'grilled': <MdOutdoorGrill />,
+      'bbq': <FaFire />, 'bbq-smoking': <FaFire />,
+      'rice': <FaBowlRice /> ,
+      'experimental': <FaPepperHot />,
+      'dessert': <FaCookie />, 'desserts': <FaCookie />,
+    };
+    return iconMap[slug] || <FaTag />;
+  };
+  
 
 // Filter Button Component
 const FilterButton = ({ 
-  category, 
+  tag, 
   active, 
   onClick 
 }: { 
-  category: { id: string; name: string; icon: React.ReactNode };
+  tag: { slug: string; name: string; icon: React.ReactNode };
   active: boolean;
   onClick: () => void;
 }) => (
@@ -45,35 +55,54 @@ const FilterButton = ({
         : 'bg-[var(--surface)] text-gray-400 hover:bg-white/10 hover:text-white border border-[var(--border)]'
     }`}
   >
-    <span className="text-base">{category.icon}</span>
-    <span>{category.name}</span>
+    <span className="text-base">{tag.icon}</span>
+    <span>{tag.name}</span>
   </motion.button>
 );
 
 export default function CookingPage() {
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeTagSlug, setActiveTagSlug] = useState('all');
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Fetch all available tags once on component mount
   useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const response = await fetch('/api/tags');
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableTags(data);
+        }
+      } catch (error) {
+        console.error('Error fetching tags:', error);
+      }
+    };
+    fetchTags();
+  }, []);
+
+  // Fetch recipes whenever the active tag changes
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/recipes?tag=${activeTagSlug}&published=true`);
+        const data = await response.json();
+        setRecipes(data);
+      } catch (error) {
+        console.error('Error fetching recipes:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchRecipes();
-  }, [activeCategory]);
+  }, [activeTagSlug]);
 
-  const fetchRecipes = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/recipes?category=${activeCategory}&published=true`);
-      const data = await response.json();
-      console.log('Fetched recipes:', data); // Debug log
-      setRecipes(data);
-    } catch (error) {
-      console.error('Error fetching recipes:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredRecipes = recipes;
+  const filterButtons = [
+    { slug: 'all', name: 'All Recipes', icon: <FaUtensils /> },
+    ...availableTags.map(tag => ({ ...tag, icon: getTagIcon(tag.slug) }))
+  ];
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -87,7 +116,6 @@ export default function CookingPage() {
         className="pt-32 md:pt-40 pb-16 md:pb-20 text-center relative overflow-hidden"
       >
         <div className="absolute inset-0 z-0">
-          {/* Unique cooking page effect - blue flame/heat waves */}
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-[var(--accent-primary)]/30 rounded-full blur-3xl opacity-60 animate-pulse-slow"></div>
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[var(--accent-primary)]/20 rounded-full blur-3xl opacity-60 animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--accent-primary)]/10 rounded-full blur-3xl opacity-40 animate-float"></div>
@@ -118,12 +146,12 @@ export default function CookingPage() {
       <section className="py-8 border-y border-white/5 sticky top-[88px] z-30 bg-black/80 backdrop-blur-xl">
         <div className="container mx-auto px-6">
           <div className="flex flex-wrap gap-3 justify-center">
-            {categories.map((category) => (
+            {filterButtons.map((tag) => (
               <FilterButton
-                key={category.id}
-                category={category}
-                active={activeCategory === category.id}
-                onClick={() => setActiveCategory(category.id)}
+                key={tag.slug}
+                tag={tag}
+                active={activeTagSlug === tag.slug}
+                onClick={() => setActiveTagSlug(tag.slug)}
               />
             ))}
           </div>
@@ -140,27 +168,27 @@ export default function CookingPage() {
           ) : (
             <AnimatePresence mode="wait">
               <motion.div
-                key={activeCategory}
+                key={activeTagSlug}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
               >
-                {filteredRecipes.map((recipe, index) => (
+                {recipes.map((recipe, index) => (
                   <RecipeCard key={recipe.id} recipe={recipe} index={index} />
                 ))}
               </motion.div>
             </AnimatePresence>
           )}
 
-          {!loading && filteredRecipes.length === 0 && (
+          {!loading && recipes.length === 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="text-center py-20"
             >
               <FaUtensils className="text-6xl text-gray-600 mx-auto mb-4" />
-              <p className="text-xl text-gray-400">No recipes found in this category yet.</p>
+              <p className="text-xl text-gray-400">No recipes found with this tag yet.</p>
               <p className="text-gray-500 mt-2">Check back soon for new additions!</p>
             </motion.div>
           )}
