@@ -312,10 +312,40 @@ export default function RecipeAdminPage() {
   const [showForm, setShowForm] = useState(false);
   const [recipes, setRecipes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
 
   React.useEffect(() => {
-    fetchRecipes();
+    // Check if already authenticated in session
+    const isAuth = sessionStorage.getItem('adminAuth');
+    if (isAuth === 'true') {
+      setAuthenticated(true);
+      fetchRecipes();
+    } else {
+      setLoading(false);
+    }
   }, []);
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/auth/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      
+      if (response.ok) {
+        setAuthenticated(true);
+        sessionStorage.setItem('adminAuth', 'true');
+        fetchRecipes();
+      } else {
+        alert('Invalid password');
+      }
+    } catch (error) {
+      alert('Authentication error');
+    }
+  };
 
   const fetchRecipes = async () => {
     try {
@@ -328,6 +358,32 @@ export default function RecipeAdminPage() {
       setLoading(false);
     }
   };
+
+  if (!authenticated) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="w-full max-w-md p-8 bg-[var(--surface)] rounded-2xl">
+          <h1 className="text-2xl font-bold mb-6 text-center">Admin Access</h1>
+          <form onSubmit={handleAuth}>
+            <input
+              type="password"
+              placeholder="Enter admin password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none mb-4"
+              autoFocus
+            />
+            <button
+              type="submit"
+              className="w-full py-3 bg-[var(--accent-primary)] rounded-lg font-medium hover:bg-opacity-80 transition-colors"
+            >
+              Access Admin
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">

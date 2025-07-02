@@ -1,11 +1,7 @@
 {
-    "functions": {
-      "app/admin/recipes/page.tsx": {
-        "maxDuration": 30
-      }
-    },
-    "authentication": {
-      "enabled": true,
-      "protectedPaths": ["/admin/*"]
+  "functions": {
+    "app/admin/recipes/page.tsx": {
+      "maxDuration": 30
     }
   }
+}
