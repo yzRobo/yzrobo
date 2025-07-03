@@ -102,7 +102,6 @@ const RecipeForm = ({ onClose, editingRecipe }: { onClose: () => void; editingRe
         featured: editingRecipe?.featured || false,
         published: editingRecipe?.published || false,
         thumbnailDisplay: editingRecipe?.thumbnailDisplay || ThumbnailDisplay.HERO,
-        // ADD THESE NUTRITION FIELDS:
         hasNutrition: !!editingRecipe?.nutrition,
         nutrition: {
             calories: editingRecipe?.nutrition?.calories?.toString() || '',
@@ -158,7 +157,7 @@ const RecipeForm = ({ onClose, editingRecipe }: { onClose: () => void; editingRe
         e.preventDefault();
         setSaving(true);
         try {
-            const totalTime = `${parseInt(formData.prepTime || '0') + parseInt(formData.cookTime || '0')} min`;
+            const totalTime = `${parseInt(formData.prepTime || '0') + parseInt(formData.cookTime || '0')}`;
             const payload: any = {
                 ...formData,
                 totalTime,
@@ -168,7 +167,6 @@ const RecipeForm = ({ onClose, editingRecipe }: { onClose: () => void; editingRe
                 tips: formData.tips.filter(Boolean),
                 heroImage: heroImagePreview,
                 ingredientsImage: ingredientsImagePreview,
-                // ADD THIS NUTRITION HANDLING:
                 nutrition: formData.hasNutrition ? {
                     calories: parseInt(formData.nutrition.calories) || 0,
                     protein: formData.nutrition.protein || '',
@@ -205,8 +203,22 @@ const RecipeForm = ({ onClose, editingRecipe }: { onClose: () => void; editingRe
     };
 
     const addIngredient = () => setFormData({ ...formData, ingredients: [...formData.ingredients, { amount: '', unit: '', item: '', notes: '' }] });
+    const removeIngredient = (index: number) => {
+        setFormData({ ...formData, ingredients: formData.ingredients.filter((_, i) => i !== index) });
+    };
+
     const addInstruction = () => setFormData({ ...formData, instructions: [...formData.instructions, { step: formData.instructions.length + 1, title: '', description: '' }] });
+    const removeInstruction = (index: number) => {
+        const newInstructions = formData.instructions
+            .filter((_, i) => i !== index)
+            .map((inst, i) => ({ ...inst, step: i + 1 }));
+        setFormData({ ...formData, instructions: newInstructions });
+    };
+
     const addTip = () => setFormData({ ...formData, tips: [...formData.tips, ''] });
+    const removeTip = (index: number) => {
+        setFormData({ ...formData, tips: formData.tips.filter((_, i) => i !== index) });
+    };
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={onClose}>
@@ -293,20 +305,35 @@ const RecipeForm = ({ onClose, editingRecipe }: { onClose: () => void; editingRe
                     
                     <div>
                         <label className="block text-sm font-medium mb-2">Ingredients</label>
-                        {formData.ingredients.map((ingredient: any, index: number) => (<div key={index} className="flex gap-2 mb-2"><input type="text" placeholder="Amount" value={ingredient.amount} onChange={(e) => { const newIngredients = [...formData.ingredients]; newIngredients[index].amount = e.target.value; setFormData({ ...formData, ingredients: newIngredients }); }} className="w-24 px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" /><input type="text" placeholder="Item" value={ingredient.item} onChange={(e) => { const newIngredients = [...formData.ingredients]; newIngredients[index].item = e.target.value; setFormData({ ...formData, ingredients: newIngredients }); }} className="flex-1 px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" /></div>))}<button type="button" onClick={addIngredient} className="text-sm text-[var(--accent-primary)] hover:underline">+ Add Ingredient</button>
+                        {formData.ingredients.map((ingredient: any, index: number) => (
+                            <div key={index} className="flex gap-2 mb-2 items-center">
+                                <input type="text" placeholder="Amount" value={ingredient.amount} onChange={(e) => { const newIngredients = [...formData.ingredients]; newIngredients[index].amount = e.target.value; setFormData({ ...formData, ingredients: newIngredients }); }} className="w-24 px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" />
+                                <input type="text" placeholder="Item" value={ingredient.item} onChange={(e) => { const newIngredients = [...formData.ingredients]; newIngredients[index].item = e.target.value; setFormData({ ...formData, ingredients: newIngredients }); }} className="flex-1 px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" />
+                                <button type="button" onClick={() => removeIngredient(index)} className="p-2 text-red-500 hover:text-red-400 transition-colors rounded-full"><FaTrash /></button>
+                            </div>
+                        ))}
+                        <button type="button" onClick={addIngredient} className="text-sm text-[var(--accent-primary)] hover:underline mt-2">+ Add Ingredient</button>
                     </div>
 
                     <div>
                         <label className="block text-sm font-medium mb-2">Instructions</label>
-                        {formData.instructions.map((instruction: any, index: number) => (<div key={index} className="mb-3"><input type="text" placeholder="Step Title (optional)" value={instruction.title} onChange={(e) => { const newInstructions = [...formData.instructions]; newInstructions[index].title = e.target.value; setFormData({ ...formData, instructions: newInstructions }); }} className="w-full mb-2 px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" /><textarea placeholder="Step description" value={instruction.description} onChange={(e) => { const newInstructions = [...formData.instructions]; newInstructions[index].description = e.target.value; setFormData({ ...formData, instructions: newInstructions }); }} rows={2} className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" /></div>))}<button type="button" onClick={addInstruction} className="text-sm text-[var(--accent-primary)] hover:underline">+ Add Instruction</button>
+                        {formData.instructions.map((instruction: any, index: number) => (
+                            <div key={index} className="relative mb-3 pl-8">
+                                <span className="absolute left-0 top-2.5 font-bold text-gray-500">{instruction.step}.</span>
+                                <input type="text" placeholder="Step Title (optional)" value={instruction.title} onChange={(e) => { const newInstructions = [...formData.instructions]; newInstructions[index].title = e.target.value; setFormData({ ...formData, instructions: newInstructions }); }} className="w-full mb-2 px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" />
+                                <textarea placeholder="Step description" value={instruction.description} onChange={(e) => { const newInstructions = [...formData.instructions]; newInstructions[index].description = e.target.value; setFormData({ ...formData, instructions: newInstructions }); }} rows={2} className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" />
+                                <button type="button" onClick={() => removeInstruction(index)} className="absolute top-1 -right-2 p-2 text-red-500 hover:text-red-400 transition-colors rounded-full"><FaTrash /></button>
+                            </div>
+                        ))}
+                        <button type="button" onClick={addInstruction} className="text-sm text-[var(--accent-primary)] hover:underline mt-2">+ Add Instruction</button>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-2">Notes (optional)</label>
+                        <label className="block text-sm font-medium mb-2">Tips (optional)</label>
                         {formData.tips.map((tip: string, index: number) => (
-                            <div key={index} className="mb-2">
+                            <div key={index} className="flex gap-2 mb-2 items-center">
                                 <textarea
-                                    placeholder="Notes..."
+                                    placeholder="Pro tip..."
                                     value={tip}
                                     onChange={(e) => {
                                         const newTips = [...formData.tips];
@@ -314,14 +341,14 @@ const RecipeForm = ({ onClose, editingRecipe }: { onClose: () => void; editingRe
                                         setFormData({ ...formData, tips: newTips });
                                     }}
                                     rows={2}
-                                    className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none"
+                                    className="flex-1 w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none"
                                 />
+                                <button type="button" onClick={() => removeTip(index)} className="p-2 text-red-500 hover:text-red-400 transition-colors rounded-full"><FaTrash /></button>
                             </div>
                         ))}
-                        <button type="button" onClick={addTip} className="text-sm text-[var(--accent-primary)] hover:underline">+ Add Tip</button>
+                        <button type="button" onClick={addTip} className="text-sm text-[var(--accent-primary)] hover:underline mt-2">+ Add Tip</button>
                     </div>
 
-                    {/* Nutrition Section */}
                     <div className="border-t border-white/10 pt-6">
                         <label className="flex items-center gap-3 mb-4">
                             <input
