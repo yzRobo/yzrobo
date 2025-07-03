@@ -194,7 +194,7 @@ export default function ModernHomepage() {
                   <div className="relative w-full max-w-sm">
                       <div className="absolute -inset-8 bg-[var(--accent-primary)]/10 rounded-full blur-3xl animate-pulse-slow"></div>
                       <Image
-                        src="/media/R6_Circle.png"
+                        src="/media/rounded_about_picture.png"
                         alt="yzRobo Helmet Logo"
                         width={500}
                         height={500}
