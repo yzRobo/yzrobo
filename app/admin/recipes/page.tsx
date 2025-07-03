@@ -302,7 +302,7 @@ const RecipeForm = ({ onClose, editingRecipe }: { onClose: () => void; editingRe
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-2">Tips (optional)</label>
+                        <label className="block text-sm font-medium mb-2">Notes (optional)</label>
                         {formData.tips.map((tip: string, index: number) => (
                             <div key={index} className="mb-2">
                                 <textarea
