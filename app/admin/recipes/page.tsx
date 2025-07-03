@@ -160,7 +160,7 @@ const RecipeForm = ({ onClose, editingRecipe }: { onClose: () => void; editingRe
         try {
             const totalTime = `${parseInt(formData.prepTime || '0') + parseInt(formData.cookTime || '0')}`;
             const payload: any = {
-                ...formData, // This now includes 'story' automatically
+                ...formData,
                 totalTime,
                 servings: parseInt(formData.servings),
                 ingredients: formData.ingredients.filter((i: any) => i.item),
