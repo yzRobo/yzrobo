@@ -313,50 +313,58 @@ function RecipeDetailContent() {
                 transition={{ delay: 0.5, duration: 0.6 }}
                 className="max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl bg-white/5"
             >
-                <img
+                <motion.img
                     src={recipe.heroImage}
                     alt={recipe.heroImageAlt || `Finished dish of ${recipe.title}`}
                     className="w-full aspect-video object-cover"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.4, ease: 'easeInOut' }}
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
             </motion.div>
         </section>
       )}
       
-      {/* Story Section */}
       {recipe.story && (
-        <section className="container mx-auto px-6 my-12 md:my-16">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="max-w-4xl mx-auto prose prose-invert lg:prose-lg"
-          >
-            <ReactMarkdown>{recipe.story}</ReactMarkdown>
-          </motion.div>
+        <section className="container mx-auto px-6 my-12 md:my-8">
+          <div className="max-w-4xl mx-auto">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="glass p-8 rounded-2xl" 
+            >
+              <h3 className="text-2xl font-bold mb-4">About This Dish</h3>
+              <div className="prose prose-invert max-w-none">
+                <ReactMarkdown>{recipe.story}</ReactMarkdown>
+              </div>
+            </motion.div>
+          </div>
         </section>
       )}
 
-      <section className="py-12 md:py-16">
+      <section className="py-12 md:py-1">
         <div className="container mx-auto px-6">
-          <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-12">
+          <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-8">
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               className="md:col-span-1"
             >
-              <h2 className="text-2xl font-bold mb-6">Ingredients</h2>
-              <ul className="space-y-0">
-                {recipe.ingredients.map((ingredient, index) => (
-                  <IngredientItem 
-                    key={ingredient.id || index} 
-                    ingredient={ingredient} 
-                    index={index}
-                    isLast={index === recipe.ingredients.length - 1}
-                  />
-                ))}
-              </ul>
+              <div className="glass p-6 rounded-2xl h-full">
+                <h2 className="text-2xl font-bold mb-4">Ingredients</h2>
+                <ul className="space-y-0">
+                  {recipe.ingredients.map((ingredient, index) => (
+                    <IngredientItem 
+                      key={ingredient.id || index} 
+                      ingredient={ingredient} 
+                      index={index}
+                      isLast={index === recipe.ingredients.length - 1}
+                    />
+                  ))}
+                </ul>
+              </div>
             </motion.div>
 
             <motion.div
@@ -365,26 +373,28 @@ function RecipeDetailContent() {
               viewport={{ once: true }}
               className="md:col-span-2"
             >
-              <h2 className="text-2xl font-bold mb-6">Instructions</h2>
-              <div className="space-y-0">
-                {recipe.instructions.map((instruction, index) => (
-                  <InstructionStep 
-                    key={instruction.id || index} 
-                    instruction={instruction} 
-                    index={index}
-                    isLast={index === recipe.instructions.length - 1}
-                  />
-                ))}
+              <div className="glass p-8 rounded-2xl">
+                <h2 className="text-2xl font-bold mb-4">Instructions</h2>
+                <div className="space-y-0">
+                  {recipe.instructions.map((instruction, index) => (
+                    <InstructionStep 
+                      key={instruction.id || index} 
+                      instruction={instruction} 
+                      index={index}
+                      isLast={index === recipe.instructions.length - 1}
+                    />
+                  ))}
+                </div>
               </div>
-
+              
               {recipe.tips && recipe.tips.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  className="mt-12 p-6 bg-[var(--surface)] rounded-2xl border border-[var(--border)]"
+                  className="mt-8 p-6 bg-[var(--surface)] rounded-2xl border border-[var(--border)]"
                 >
-                  <h3 className="text-xl font-bold mb-4">Notes</h3>
+                  <h3 className="text-xl font-bold mb-4">Pro Tips</h3>
                   <ul className="space-y-3">
                     {recipe.tips.map((tip, index) => (
                       <li key={tip.id || index} className="flex items-start gap-3">
@@ -399,7 +409,7 @@ function RecipeDetailContent() {
               )}
 
               {recipe.nutrition && (
-                <div className="mt-12">
+                <div className="mt-8">
                   <NutritionDisplay 
                     nutrition={recipe.nutrition} 
                     servings={recipe.servings}
