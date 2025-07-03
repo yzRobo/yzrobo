@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { FaClock, FaStar, FaUsers } from 'react-icons/fa';
 import { Recipe, ThumbnailDisplay } from '@/types/recipe';
 import { getDifficultyColor } from '@/lib/recipes';
+import { formatCookingTime } from '@/lib/utils/timeFormatting';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -103,7 +104,7 @@ export default function RecipeCard({ recipe, index = 0, featured = false }: Reci
               <div className="flex items-center gap-4 text-gray-500">
                 <span className="flex items-center gap-1">
                   <FaClock className="text-[var(--accent-primary)]" />
-                  {recipe.totalTime}
+                  {formatCookingTime(recipe.totalTime)}
                 </span>
                 <span className="flex items-center gap-1">
                   <FaUsers className="text-[var(--accent-primary)]" />

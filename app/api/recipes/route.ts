@@ -83,10 +83,10 @@ export async function POST(request: NextRequest) {
       ingredients,
       instructions,
       tips,
-      nutrition,
+      nutrition, // This can now be null or an object
       tags,
       heroImage,
-      ingredientsImage, 
+      ingredientsImage,
     } = body;
     
     const slug = title
@@ -109,12 +109,12 @@ export async function POST(request: NextRequest) {
       heroImageUrl = blob.url;
     }
 
-    // --- HANDLE INGREDIENTS IMAGE UPLOAD ---
+    // Handle Ingredients Image Upload
     let ingredientsImageUrl = null;
     if (ingredientsImage && typeof ingredientsImage === 'string' && ingredientsImage.startsWith('data:')) {
       const base64Data = ingredientsImage.split(',')[1];
       const buffer = Buffer.from(base64Data, 'base64');
-      const filename = `recipes/${slug}-ingredients-${Date.now()}.jpg`; // Different filename
+      const filename = `recipes/${slug}-ingredients-${Date.now()}.jpg`;
       
       const blob = await put(filename, buffer, {
         access: 'public',
@@ -123,7 +123,6 @@ export async function POST(request: NextRequest) {
       
       ingredientsImageUrl = blob.url;
     }
-    // --- END OF CODE BLOCK ---
     
     const recipe = await prisma.recipe.create({
       data: {
@@ -139,7 +138,7 @@ export async function POST(request: NextRequest) {
         featured: featured || false,
         published: published || false,
         heroImage: heroImageUrl,
-        heroImageAlt: `${title} - finished dish`, // Updated Alt Text
+        heroImageAlt: `${title} - finished dish`,
         ingredientsImage: ingredientsImageUrl,
         ingredientsImageAlt: `Ingredients for ${title}`,
         publishedAt: published ? new Date() : null,
@@ -167,15 +166,16 @@ export async function POST(request: NextRequest) {
             order: index,
           })),
         } : undefined,
-        nutrition: nutrition ? {
+        // Updated nutrition handling - only create if nutrition data is provided
+        nutrition: nutrition && nutrition.calories ? {
           create: {
             calories: parseInt(nutrition.calories),
             protein: nutrition.protein,
             carbs: nutrition.carbs,
             fat: nutrition.fat,
-            fiber: nutrition.fiber,
-            sugar: nutrition.sugar,
-            sodium: nutrition.sodium,
+            fiber: nutrition.fiber || null,
+            sugar: nutrition.sugar || null,
+            sodium: nutrition.sodium || null,
           },
         } : undefined,
         tags: tags ? {

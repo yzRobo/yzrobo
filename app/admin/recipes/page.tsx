@@ -102,6 +102,17 @@ const RecipeForm = ({ onClose, editingRecipe }: { onClose: () => void; editingRe
         featured: editingRecipe?.featured || false,
         published: editingRecipe?.published || false,
         thumbnailDisplay: editingRecipe?.thumbnailDisplay || ThumbnailDisplay.HERO,
+        // ADD THESE NUTRITION FIELDS:
+        hasNutrition: !!editingRecipe?.nutrition,
+        nutrition: {
+            calories: editingRecipe?.nutrition?.calories?.toString() || '',
+            protein: editingRecipe?.nutrition?.protein || '',
+            carbs: editingRecipe?.nutrition?.carbs || '',
+            fat: editingRecipe?.nutrition?.fat || '',
+            fiber: editingRecipe?.nutrition?.fiber || '',
+            sugar: editingRecipe?.nutrition?.sugar || '',
+            sodium: editingRecipe?.nutrition?.sodium || '',
+        }
     });
 
     const [saving, setSaving] = useState(false);
@@ -144,43 +155,53 @@ const RecipeForm = ({ onClose, editingRecipe }: { onClose: () => void; editingRe
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
-      e.preventDefault();
-      setSaving(true);
-      try {
-        const totalTime = `${parseInt(formData.prepTime || '0') + parseInt(formData.cookTime || '0')} min`;
-        const payload: any = {
-          ...formData,
-          totalTime,
-          servings: parseInt(formData.servings),
-          ingredients: formData.ingredients.filter((i: any) => i.item),
-          instructions: formData.instructions.filter((i: any) => i.description),
-          tips: formData.tips.filter(Boolean),
-          heroImage: heroImagePreview,
-          ingredientsImage: ingredientsImagePreview
-        };
-
-        const url = editingRecipe ? `/api/recipes/${editingRecipe.slug}` : '/api/recipes';
-        const method = editingRecipe ? 'PUT' : 'POST';
-
-        const response = await fetch(url, {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-
-        if (response.ok) {
-          alert(editingRecipe ? 'Recipe updated successfully!' : 'Recipe created successfully!');
-          onClose();
-        } else {
-          const error = await response.json();
-          alert(`Failed: ${error.error || 'Unknown error'}`);
+        e.preventDefault();
+        setSaving(true);
+        try {
+            const totalTime = `${parseInt(formData.prepTime || '0') + parseInt(formData.cookTime || '0')} min`;
+            const payload: any = {
+                ...formData,
+                totalTime,
+                servings: parseInt(formData.servings),
+                ingredients: formData.ingredients.filter((i: any) => i.item),
+                instructions: formData.instructions.filter((i: any) => i.description),
+                tips: formData.tips.filter(Boolean),
+                heroImage: heroImagePreview,
+                ingredientsImage: ingredientsImagePreview,
+                // ADD THIS NUTRITION HANDLING:
+                nutrition: formData.hasNutrition ? {
+                    calories: parseInt(formData.nutrition.calories) || 0,
+                    protein: formData.nutrition.protein || '',
+                    carbs: formData.nutrition.carbs || '',
+                    fat: formData.nutrition.fat || '',
+                    fiber: formData.nutrition.fiber || null,
+                    sugar: formData.nutrition.sugar || null,
+                    sodium: formData.nutrition.sodium || null,
+                } : null
+            };
+    
+            const url = editingRecipe ? `/api/recipes/${editingRecipe.slug}` : '/api/recipes';
+            const method = editingRecipe ? 'PUT' : 'POST';
+    
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+    
+            if (response.ok) {
+                alert(editingRecipe ? 'Recipe updated successfully!' : 'Recipe created successfully!');
+                onClose();
+            } else {
+                const error = await response.json();
+                alert(`Failed: ${error.error || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error('Error handling recipe:', error);
+            alert('Error: ' + (error as Error).message);
+        } finally {
+            setSaving(false);
         }
-      } catch (error) {
-        console.error('Error handling recipe:', error);
-        alert('Error: ' + (error as Error).message);
-      } finally {
-        setSaving(false);
-      }
     };
 
     const addIngredient = () => setFormData({ ...formData, ingredients: [...formData.ingredients, { amount: '', unit: '', item: '', notes: '' }] });
@@ -278,6 +299,151 @@ const RecipeForm = ({ onClose, editingRecipe }: { onClose: () => void; editingRe
                     <div>
                         <label className="block text-sm font-medium mb-2">Instructions</label>
                         {formData.instructions.map((instruction: any, index: number) => (<div key={index} className="mb-3"><input type="text" placeholder="Step Title (optional)" value={instruction.title} onChange={(e) => { const newInstructions = [...formData.instructions]; newInstructions[index].title = e.target.value; setFormData({ ...formData, instructions: newInstructions }); }} className="w-full mb-2 px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" /><textarea placeholder="Step description" value={instruction.description} onChange={(e) => { const newInstructions = [...formData.instructions]; newInstructions[index].description = e.target.value; setFormData({ ...formData, instructions: newInstructions }); }} rows={2} className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" /></div>))}<button type="button" onClick={addInstruction} className="text-sm text-[var(--accent-primary)] hover:underline">+ Add Instruction</button>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Tips (optional)</label>
+                        {formData.tips.map((tip: string, index: number) => (
+                            <div key={index} className="mb-2">
+                                <textarea
+                                    placeholder="Notes..."
+                                    value={tip}
+                                    onChange={(e) => {
+                                        const newTips = [...formData.tips];
+                                        newTips[index] = e.target.value;
+                                        setFormData({ ...formData, tips: newTips });
+                                    }}
+                                    rows={2}
+                                    className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none"
+                                />
+                            </div>
+                        ))}
+                        <button type="button" onClick={addTip} className="text-sm text-[var(--accent-primary)] hover:underline">+ Add Tip</button>
+                    </div>
+
+                    {/* Nutrition Section */}
+                    <div className="border-t border-white/10 pt-6">
+                        <label className="flex items-center gap-3 mb-4">
+                            <input
+                                type="checkbox"
+                                checked={formData.hasNutrition}
+                                onChange={(e) => setFormData({ ...formData, hasNutrition: e.target.checked })}
+                                className="w-5 h-5 bg-transparent border-gray-600 rounded text-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]"
+                            />
+                            <span className="text-lg font-medium">Include Nutrition Information</span>
+                        </label>
+
+                        {formData.hasNutrition && (
+                            <div className="space-y-4 p-4 bg-black/30 rounded-lg">
+                                <p className="text-sm text-gray-400 mb-4">Enter nutrition information per serving. Optional fields can be left blank.</p>
+                                
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">Calories <span className="text-red-400">*</span></label>
+                                        <input
+                                            type="number"
+                                            value={formData.nutrition.calories}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                nutrition: { ...formData.nutrition, calories: e.target.value }
+                                            })}
+                                            className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none"
+                                            placeholder="250"
+                                            required={formData.hasNutrition}
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">Protein <span className="text-red-400">*</span></label>
+                                        <input
+                                            type="text"
+                                            value={formData.nutrition.protein}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                nutrition: { ...formData.nutrition, protein: e.target.value }
+                                            })}
+                                            className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none"
+                                            placeholder="20g"
+                                            required={formData.hasNutrition}
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">Carbs <span className="text-red-400">*</span></label>
+                                        <input
+                                            type="text"
+                                            value={formData.nutrition.carbs}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                nutrition: { ...formData.nutrition, carbs: e.target.value }
+                                            })}
+                                            className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none"
+                                            placeholder="30g"
+                                            required={formData.hasNutrition}
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">Fat <span className="text-red-400">*</span></label>
+                                        <input
+                                            type="text"
+                                            value={formData.nutrition.fat}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                nutrition: { ...formData.nutrition, fat: e.target.value }
+                                            })}
+                                            className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none"
+                                            placeholder="10g"
+                                            required={formData.hasNutrition}
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">Fiber (optional)</label>
+                                        <input
+                                            type="text"
+                                            value={formData.nutrition.fiber}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                nutrition: { ...formData.nutrition, fiber: e.target.value }
+                                            })}
+                                            className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none"
+                                            placeholder="5g"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">Sugar (optional)</label>
+                                        <input
+                                            type="text"
+                                            value={formData.nutrition.sugar}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                nutrition: { ...formData.nutrition, sugar: e.target.value }
+                                            })}
+                                            className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none"
+                                            placeholder="8g"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">Sodium (optional)</label>
+                                        <input
+                                            type="text"
+                                            value={formData.nutrition.sodium}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                nutrition: { ...formData.nutrition, sodium: e.target.value }
+                                            })}
+                                            className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none"
+                                            placeholder="400mg"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex gap-6">

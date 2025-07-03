@@ -50,14 +50,15 @@ export async function GET(
 // PUT /api/recipes/[slug] - Update a recipe
 export async function PUT(
   request: NextRequest,
-  context: { params: Promise<{ slug: string }> } // CORRECTED TYPE
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = await context.params; // CORRECTED WITH AWAIT
+    const { slug } = await context.params;
     const body = await request.json();
     
     const existingRecipe = await prisma.recipe.findUnique({
       where: { slug },
+      include: { nutrition: true }, // Include nutrition to check if it exists
     });
     
     if (!existingRecipe) {
@@ -90,6 +91,43 @@ export async function PUT(
       dataToUpdate.ingredientsImageAlt = null;
     }
     
+    // Handle nutrition updates
+    let nutritionUpdate: any = undefined;
+    
+    if (body.nutrition === null && existingRecipe.nutrition) {
+      // Delete existing nutrition
+      nutritionUpdate = {
+        delete: true
+      };
+    } else if (body.nutrition && body.nutrition.calories) {
+      // Update or create nutrition
+      if (existingRecipe.nutrition) {
+        nutritionUpdate = {
+          update: {
+            calories: parseInt(body.nutrition.calories),
+            protein: body.nutrition.protein,
+            carbs: body.nutrition.carbs,
+            fat: body.nutrition.fat,
+            fiber: body.nutrition.fiber || null,
+            sugar: body.nutrition.sugar || null,
+            sodium: body.nutrition.sodium || null,
+          }
+        };
+      } else {
+        nutritionUpdate = {
+          create: {
+            calories: parseInt(body.nutrition.calories),
+            protein: body.nutrition.protein,
+            carbs: body.nutrition.carbs,
+            fat: body.nutrition.fat,
+            fiber: body.nutrition.fiber || null,
+            sugar: body.nutrition.sugar || null,
+            sodium: body.nutrition.sodium || null,
+          }
+        };
+      }
+    }
+    
     const updatedRecipe = await prisma.recipe.update({
       where: { slug },
       data: {
@@ -111,21 +149,31 @@ export async function PUT(
         ingredients: {
           deleteMany: {},
           create: body.ingredients.map((ing: any, index: number) => ({
-            amount: ing.amount, unit: ing.unit, item: ing.item, notes: ing.notes, group: ing.group, order: index,
+            amount: ing.amount, 
+            unit: ing.unit, 
+            item: ing.item, 
+            notes: ing.notes, 
+            group: ing.group, 
+            order: index,
           })),
         },
         instructions: {
           deleteMany: {},
           create: body.instructions.map((inst: any, index: number) => ({
-            step: index + 1, title: inst.title, description: inst.description, time: inst.time,
+            step: index + 1, 
+            title: inst.title, 
+            description: inst.description, 
+            time: inst.time,
           })),
         },
         tips: {
           deleteMany: {},
           create: body.tips?.map((tip: string, index: number) => ({
-            content: tip, order: index,
+            content: tip, 
+            order: index,
           })) || [],
         },
+        nutrition: nutritionUpdate,
         tags: body.tags ? {
           set: [],
           connectOrCreate: body.tags.map((tagName: string) => ({
@@ -138,7 +186,11 @@ export async function PUT(
         } : undefined,
       },
       include: {
-        ingredients: true, instructions: true, tips: true, nutrition: true, tags: true,
+        ingredients: true, 
+        instructions: true, 
+        tips: true, 
+        nutrition: true, 
+        tags: true,
       },
     });
     
@@ -146,23 +198,5 @@ export async function PUT(
   } catch (error) {
     console.error('Error updating recipe:', error);
     return NextResponse.json({ error: 'Failed to update recipe' }, { status: 500 });
-  }
-}
-
-// DELETE /api/recipes/[slug] - Delete a recipe
-export async function DELETE(
-  request: NextRequest,
-  context: { params: Promise<{ slug: string }> } // CORRECTED TYPE
-) {
-  try {
-    const { slug } = await context.params; // CORRECTED WITH AWAIT
-    await prisma.recipe.delete({
-      where: { slug },
-    });
-    
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Error deleting recipe:', error);
-    return NextResponse.json({ error: 'Failed to delete recipe' }, { status: 500 });
   }
 }

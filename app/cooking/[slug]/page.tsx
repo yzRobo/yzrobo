@@ -17,44 +17,69 @@ import {
   FaExclamationTriangle
 } from 'react-icons/fa';
 import Navigation from '../../components/Navigation';
+import NutritionDisplay from '../../components/NutritionDisplay';
 import { Recipe } from '@/types/recipe';
 import { PageLoadingSpinner } from '../../components/LoadingStates';
 import ErrorBoundary from '../../components/ErrorBoundary';
 
-// Ingredient Item Component
-const IngredientItem = ({ ingredient, index }: { ingredient: any; index: number }) => (
-  <motion.li
-    initial={{ opacity: 0, x: -20 }}
-    animate={{ opacity: 1, x: 0 }}
-    transition={{ delay: index * 0.05 }}
-    className="flex items-start gap-3 py-2"
-  >
-    <FaCheckCircle className="text-[var(--accent-primary)] mt-0.5 flex-shrink-0" />
-    <div>
-      <span className="font-semibold text-white">{ingredient.amount}</span>
-      {ingredient.unit && <span className="text-gray-300 ml-1">{ingredient.unit}</span>}
-      <span className="text-gray-300 ml-2">{ingredient.item}</span>
-      {ingredient.notes && <span className="text-gray-400 ml-2 text-sm">({ingredient.notes})</span>}
-    </div>
-  </motion.li>
+// Helper function to format time
+const formatTime = (timeStr: string): string => {
+  // Extract minutes from strings like "90 min", "120 min", etc.
+  const match = timeStr.match(/(\d+)\s*min/i);
+  if (!match) return timeStr;
+  
+  const minutes = parseInt(match[1]);
+  if (minutes < 60) return timeStr;
+  
+  const hours = minutes / 60;
+  // Format as "1.5 hours" or "2 hours" (no decimal if whole number)
+  return hours % 1 === 0 ? `${hours} hours` : `${hours} hours`;
+};
+
+// Ingredient Item Component with divider
+const IngredientItem = ({ ingredient, index, isLast }: { ingredient: any; index: number; isLast: boolean }) => (
+  <>
+    <motion.li
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className="flex items-start gap-3 py-3"
+    >
+      <FaCheckCircle className="text-[var(--accent-primary)] mt-0.5 flex-shrink-0" />
+      <div>
+        <span className="font-semibold text-white">{ingredient.amount}</span>
+        {ingredient.unit && <span className="text-gray-300 ml-1">{ingredient.unit}</span>}
+        <span className="text-gray-300 ml-2">{ingredient.item}</span>
+        {ingredient.notes && <span className="text-gray-400 ml-2 text-sm">({ingredient.notes})</span>}
+      </div>
+    </motion.li>
+    {!isLast && (
+      <div className="border-b border-white/5 mx-2" />
+    )}
+  </>
 );
 
-// Instruction Step Component
-const InstructionStep = ({ instruction, index }: { instruction: any; index: number }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: index * 0.1 }}
-    className="flex gap-4"
-  >
-    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[var(--accent-primary)] text-white font-bold flex items-center justify-center">
-      {instruction.step}
-    </div>
-    <div className="flex-1">
-      {instruction.title && <h3 className="text-lg font-semibold text-white mb-1">{instruction.title}</h3>}
-      <p className="text-gray-300 leading-relaxed">{instruction.description}</p>
-    </div>
-  </motion.div>
+// Instruction Step Component with divider
+const InstructionStep = ({ instruction, index, isLast }: { instruction: any; index: number; isLast: boolean }) => (
+  <>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1 }}
+      className="flex gap-4 py-4"
+    >
+      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[var(--accent-primary)] text-white font-bold flex items-center justify-center">
+        {instruction.step}
+      </div>
+      <div className="flex-1">
+        {instruction.title && <h3 className="text-lg font-semibold text-white mb-1">{instruction.title}</h3>}
+        <p className="text-gray-300 leading-relaxed">{instruction.description}</p>
+      </div>
+    </motion.div>
+    {!isLast && (
+      <div className="border-b border-white/5" />
+    )}
+  </>
 );
 
 // Action Button Component
@@ -247,7 +272,7 @@ function RecipeDetailContent() {
             >
               <div className="flex items-center gap-2">
                 <FaClock className="text-[var(--accent-primary)]" />
-                <span>Total: {recipe.totalTime}</span>
+                <span>Total: {formatTime(recipe.totalTime)}</span>
               </div>
               <div className="flex items-center gap-2">
                 <FaUsers className="text-[var(--accent-primary)]" />
@@ -325,9 +350,14 @@ function RecipeDetailContent() {
               className="md:col-span-1"
             >
               <h2 className="text-2xl font-bold mb-6">Ingredients</h2>
-              <ul className="space-y-1">
+              <ul className="space-y-0">
                 {recipe.ingredients.map((ingredient, index) => (
-                  <IngredientItem key={ingredient.id || index} ingredient={ingredient} index={index} />
+                  <IngredientItem 
+                    key={ingredient.id || index} 
+                    ingredient={ingredient} 
+                    index={index}
+                    isLast={index === recipe.ingredients.length - 1}
+                  />
                 ))}
               </ul>
             </motion.div>
@@ -339,9 +369,14 @@ function RecipeDetailContent() {
               className="md:col-span-2"
             >
               <h2 className="text-2xl font-bold mb-6">Instructions</h2>
-              <div className="space-y-6">
+              <div className="space-y-0">
                 {recipe.instructions.map((instruction, index) => (
-                  <InstructionStep key={instruction.id || index} instruction={instruction} index={index} />
+                  <InstructionStep 
+                    key={instruction.id || index} 
+                    instruction={instruction} 
+                    index={index}
+                    isLast={index === recipe.instructions.length - 1}
+                  />
                 ))}
               </div>
 
@@ -365,32 +400,12 @@ function RecipeDetailContent() {
               )}
 
               {recipe.nutrition && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  className="mt-8 p-6 bg-[var(--surface)]/50 rounded-2xl"
-                >
-                  <h3 className="text-lg font-bold mb-3">Nutrition Per Serving</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-400">Calories</span>
-                      <p className="font-semibold">{recipe.nutrition.calories}</p>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Protein</span>
-                      <p className="font-semibold">{recipe.nutrition.protein}</p>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Carbs</span>
-                      <p className="font-semibold">{recipe.nutrition.carbs}</p>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Fat</span>
-                      <p className="font-semibold">{recipe.nutrition.fat}</p>
-                    </div>
-                  </div>
-                </motion.div>
+                <div className="mt-12">
+                  <NutritionDisplay 
+                    nutrition={recipe.nutrition} 
+                    servings={recipe.servings}
+                  />
+                </div>
               )}
             </motion.div>
           </div>
