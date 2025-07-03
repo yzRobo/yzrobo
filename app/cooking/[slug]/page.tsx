@@ -394,7 +394,7 @@ function RecipeDetailContent() {
                   viewport={{ once: true }}
                   className="mt-8 p-6 bg-[var(--surface)] rounded-2xl border border-[var(--border)]"
                 >
-                  <h3 className="text-xl font-bold mb-4">Pro Tips</h3>
+                  <h3 className="text-xl font-bold mb-4">Notes</h3>
                   <ul className="space-y-3">
                     {recipe.tips.map((tip, index) => (
                       <li key={tip.id || index} className="flex items-start gap-3">
