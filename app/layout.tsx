@@ -37,12 +37,12 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "yzRobo",
-    description: "Gaming enthusiast. Automotive engineer. Creative coder.",
+    description: "Gaming enthusiast. Automotive obsessed. Creative vibe coding.",
     url: "https://yzrobo.com",
     siteName: "yzRobo",
     images: [
       {
-        url: "/og-image.png",
+        url: "/android-chrome-512x512.png",
         width: 1200,
         height: 630,
         alt: "yzRobo",
@@ -54,9 +54,9 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "yzRobo",
-    description: "Gaming enthusiast. Automotive engineer. Creative coder.",
+    description: "Gaming enthusiast. Automotive obsessed. Creative vibe coding.",
     creator: "@yzRobo",
-    images: ["/og-image.png"],
+    images: ["/android-chrome-512x512.png"],
   },
 };
 

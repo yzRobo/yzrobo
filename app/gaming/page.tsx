@@ -70,7 +70,7 @@ export default function GamingPage() {
             Gaming
           </h1>
           <p className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto">
-            From the fast-paced battlegrounds of Apex Legends to immersive single-player stories, this is my digital playground.
+            Dodging the 4-3 linear turrets of Apex and sharing tips for stream improvements.
           </p>
         </div>
       </motion.section>
@@ -82,7 +82,7 @@ export default function GamingPage() {
             <Feature
               icon={<FaTwitch />}
               title="Live on Twitch"
-              description="Catch me live for high-level gameplay, community games, and general shenanigans. The main hub for all things yzRobo."
+              description="Catch me live for Apex movement, cooking streams, IRL projects, and general shenanigans."
               link="https://twitch.tv/yzRobo"
               linkText="Follow on Twitch"
             />
@@ -108,7 +108,7 @@ export default function GamingPage() {
       <section className="py-16 md:py-20">
         <div className="container mx-auto px-6">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">The Arsenal</h2>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Hardware</h2>
             <p className="text-lg text-gray-400 mt-2">A glimpse into the hardware and games that power the stream.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
