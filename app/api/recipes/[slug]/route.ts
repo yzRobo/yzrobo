@@ -199,13 +199,13 @@ export async function PUT(
   }
 }
 
-// DELETE function remains the same
+// DELETE /api/recipes/[slug] - Delete a recipe
 export async function DELETE(
     request: NextRequest,
-    context: { params: { slug: string } }
+    context: { params: Promise<{ slug: string }> } // <-- CORRECTED THE TYPE
   ) {
     try {
-      const { slug } = context.params;
+      const { slug } = await context.params; // <-- CORRECTED WITH AWAIT
   
       await prisma.recipe.delete({
         where: { slug },
