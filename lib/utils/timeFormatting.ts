@@ -3,37 +3,40 @@
 /**
  * Formats time strings from minutes to hours when appropriate
  * Examples:
- * - "30 min" → "30 min"
- * - "60 min" → "1 hour"
- * - "90 min" → "1.5 hours"
- * - "120 min" → "2 hours"
+ * - "30" → "30 min"
+ * - "60" → "1 hour"
+ * - "90" → "1.5 hours"
+ * - "240" → "4 hours"
  */
 export function formatCookingTime(timeStr: string): string {
-    // Handle null/undefined
-    if (!timeStr) return '';
-    
-    // Extract minutes from strings like "90 min", "120 minutes", etc.
-    const match = timeStr.match(/(\d+)\s*min/i);
-    if (!match) return timeStr;
-    
-    const minutes = parseInt(match[1]);
-    
-    // Keep as minutes if less than 60
-    if (minutes < 60) return timeStr;
-    
-    // Convert to hours
-    const hours = minutes / 60;
-    
-    // Format based on whether it's a whole number
-    if (hours === 1) {
-      return '1 hour';
-    } else if (hours % 1 === 0) {
-      return `${hours} hours`;
-    } else {
-      // For fractional hours, show as decimal (e.g., 1.5 hours)
-      return `${hours} hours`;
-    }
+  if (!timeStr) return '';
+
+  const minutes = parseInt(timeStr, 10);
+
+  if (isNaN(minutes)) {
+    return timeStr;
   }
+
+  if (minutes < 60) {
+    return `${minutes} min`;
+  }
+  
+  const hours = minutes / 60;
+  
+  if (hours === 1) {
+    return '1 hour';
+  }
+  
+  // Check for whole numbers of hours
+  if (minutes % 60 === 0) {
+    return `${hours} hours`;
+  }
+  
+  // For fractional hours, show as decimal (e.g., 1.5)
+  // Using toFixed(1) and then parseFloat to remove trailing .0
+  const decimalHours = parseFloat(hours.toFixed(1));
+  return `${decimalHours} hours`;
+}
   
   /**
    * Formats prep and cook times for display
@@ -49,9 +52,9 @@ export function formatCookingTime(timeStr: string): string {
     const totalMinutes = prepMinutes + cookMinutes;
     
     return {
-      prep: formatCookingTime(`${prepMinutes} min`),
-      cook: formatCookingTime(`${cookMinutes} min`),
-      total: formatCookingTime(`${totalMinutes} min`)
+      prep: formatCookingTime(`${prepMinutes}`),
+      cook: formatCookingTime(`${cookMinutes}`),
+      total: formatCookingTime(`${totalMinutes}`)
     };
   }
   

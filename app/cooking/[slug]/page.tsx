@@ -21,20 +21,7 @@ import NutritionDisplay from '../../components/NutritionDisplay';
 import { Recipe } from '@/types/recipe';
 import { PageLoadingSpinner } from '../../components/LoadingStates';
 import ErrorBoundary from '../../components/ErrorBoundary';
-
-// Helper function to format time
-const formatTime = (timeStr: string): string => {
-  // Extract minutes from strings like "90 min", "120 min", etc.
-  const match = timeStr.match(/(\d+)\s*min/i);
-  if (!match) return timeStr;
-  
-  const minutes = parseInt(match[1]);
-  if (minutes < 60) return timeStr;
-  
-  const hours = minutes / 60;
-  // Format as "1.5 hours" or "2 hours" (no decimal if whole number)
-  return hours % 1 === 0 ? `${hours} hours` : `${hours} hours`;
-};
+import { formatCookingTime } from '@/lib/utils/timeFormatting';
 
 // Ingredient Item Component with divider
 const IngredientItem = ({ ingredient, index, isLast }: { ingredient: any; index: number; isLast: boolean }) => (
@@ -272,7 +259,11 @@ function RecipeDetailContent() {
             >
               <div className="flex items-center gap-2">
                 <FaClock className="text-[var(--accent-primary)]" />
-                <span>Total: {formatTime(recipe.totalTime)}</span>
+                <span>Prep: {formatCookingTime(recipe.prepTime)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <FaClock className="text-[var(--accent-primary)]" />
+                <span>Cook: {formatCookingTime(recipe.cookTime)}</span>
               </div>
               <div className="flex items-center gap-2">
                 <FaUsers className="text-[var(--accent-primary)]" />
