@@ -7,10 +7,10 @@ import { put } from '@vercel/blob';
 // GET /api/recipes/[slug] - Get a single recipe
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ slug: string }> } // CORRECTED TYPE
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = await context.params; // CORRECTED WITH AWAIT
+    const { slug } = await context.params;
     const recipe = await prisma.recipe.findUnique({
       where: { slug },
       include: {
@@ -58,7 +58,7 @@ export async function PUT(
     
     const existingRecipe = await prisma.recipe.findUnique({
       where: { slug },
-      include: { nutrition: true }, // Include nutrition to check if it exists
+      include: { nutrition: true },
     });
     
     if (!existingRecipe) {
@@ -91,16 +91,13 @@ export async function PUT(
       dataToUpdate.ingredientsImageAlt = null;
     }
     
-    // Handle nutrition updates
     let nutritionUpdate: any = undefined;
     
     if (body.nutrition === null && existingRecipe.nutrition) {
-      // Delete existing nutrition
       nutritionUpdate = {
         delete: true
       };
     } else if (body.nutrition && body.nutrition.calories) {
-      // Update or create nutrition
       if (existingRecipe.nutrition) {
         nutritionUpdate = {
           update: {
@@ -133,6 +130,7 @@ export async function PUT(
       data: {
         title: body.title,
         description: body.description,
+        story: body.story,
         cuisine: body.cuisine,
         prepTime: body.prepTime,
         cookTime: body.cookTime,
@@ -199,4 +197,23 @@ export async function PUT(
     console.error('Error updating recipe:', error);
     return NextResponse.json({ error: 'Failed to update recipe' }, { status: 500 });
   }
+}
+
+// DELETE function remains the same
+export async function DELETE(
+    request: NextRequest,
+    context: { params: { slug: string } }
+  ) {
+    try {
+      const { slug } = context.params;
+  
+      await prisma.recipe.delete({
+        where: { slug },
+      });
+  
+      return NextResponse.json({ message: 'Recipe deleted' });
+    } catch (error) {
+      console.error('Error deleting recipe:', error);
+      return NextResponse.json({ error: 'Failed to delete recipe' }, { status: 500 });
+    }
 }

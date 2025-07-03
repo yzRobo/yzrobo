@@ -90,6 +90,7 @@ const RecipeForm = ({ onClose, editingRecipe }: { onClose: () => void; editingRe
     const [formData, setFormData] = useState({
         title: editingRecipe?.title || '',
         description: editingRecipe?.description || '',
+        story: editingRecipe?.story || '',
         cuisine: editingRecipe?.cuisine || '',
         prepTime: editingRecipe?.prepTime || '',
         cookTime: editingRecipe?.cookTime || '',
@@ -159,7 +160,7 @@ const RecipeForm = ({ onClose, editingRecipe }: { onClose: () => void; editingRe
         try {
             const totalTime = `${parseInt(formData.prepTime || '0') + parseInt(formData.cookTime || '0')}`;
             const payload: any = {
-                ...formData,
+                ...formData, // This now includes 'story' automatically
                 totalTime,
                 servings: parseInt(formData.servings),
                 ingredients: formData.ingredients.filter((i: any) => i.item),
@@ -294,6 +295,12 @@ const RecipeForm = ({ onClose, editingRecipe }: { onClose: () => void; editingRe
                     <div>
                         <label className="block text-sm font-medium mb-2">Description</label>
                         <textarea required value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} className="w-full px-4 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Story / Details (Optional)</label>
+                        <p className="text-xs text-gray-500 mb-2">Add more details about the dish. This will appear below the main image. Markdown is supported.</p>
+                        <textarea value={formData.story} onChange={(e) => setFormData({ ...formData, story: e.target.value })} rows={5} className="w-full px-4 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" />
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

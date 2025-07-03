@@ -22,6 +22,7 @@ import { Recipe } from '@/types/recipe';
 import { PageLoadingSpinner } from '../../components/LoadingStates';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import { formatCookingTime } from '@/lib/utils/timeFormatting';
+import ReactMarkdown from 'react-markdown';
 
 // Ingredient Item Component with divider
 const IngredientItem = ({ ingredient, index, isLast }: { ingredient: any; index: number; isLast: boolean }) => (
@@ -60,7 +61,9 @@ const InstructionStep = ({ instruction, index, isLast }: { instruction: any; ind
       </div>
       <div className="flex-1">
         {instruction.title && <h3 className="text-lg font-semibold text-white mb-1">{instruction.title}</h3>}
-        <p className="text-gray-300 leading-relaxed">{instruction.description}</p>
+        <div className="prose prose-invert prose-sm max-w-none">
+          <ReactMarkdown>{instruction.description}</ReactMarkdown>
+        </div>
       </div>
     </motion.div>
     {!isLast && (
@@ -172,7 +175,6 @@ function RecipeDetailContent() {
         });
       } else {
         await navigator.clipboard.writeText(window.location.href);
-        // You could add a toast notification here
         alert('Link copied to clipboard!');
       }
     } catch (err) {
@@ -201,19 +203,14 @@ function RecipeDetailContent() {
     <div className="min-h-screen bg-black text-white">
       <Navigation />
       
-      {/* Hero Section */}
       <section className="relative pt-24 pb-12 md:pt-32 md:pb-16">
-        {/* Use the ingredientsImage for the background */}
         {recipe.ingredientsImage && (
           <div className="absolute inset-0 z-0">
             <img 
               src={recipe.ingredientsImage} 
               alt={recipe.ingredientsImageAlt || `Ingredients for ${recipe.title}`}
               className="w-full h-full object-cover opacity-80"
-              onError={(e) => {
-                // Hide image if it fails to load
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black" />
           </div>
@@ -242,14 +239,14 @@ function RecipeDetailContent() {
               {recipe.title}
             </motion.h1>
             
-            <motion.p
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-xl text-gray-400 mb-6"
+              className="prose prose-invert prose-xl max-w-none mb-6"
             >
-              {recipe.description}
-            </motion.p>
+              <ReactMarkdown>{recipe.description}</ReactMarkdown>
+            </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -308,9 +305,8 @@ function RecipeDetailContent() {
         </div>
       </section>
 
-      {/* Main Image Section */}
       {recipe.heroImage && (
-        <section className="container mx-auto px-6 mt-8 mb-12 md:mb-16">
+        <section className="container mx-auto px-6 mt-8">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -321,16 +317,26 @@ function RecipeDetailContent() {
                     src={recipe.heroImage}
                     alt={recipe.heroImageAlt || `Finished dish of ${recipe.title}`}
                     className="w-full aspect-video object-cover"
-                    onError={(e) => {
-                      // Hide image if it fails to load
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
             </motion.div>
         </section>
       )}
+      
+      {/* Story Section */}
+      {recipe.story && (
+        <section className="container mx-auto px-6 my-12 md:my-16">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="max-w-4xl mx-auto prose prose-invert lg:prose-lg"
+          >
+            <ReactMarkdown>{recipe.story}</ReactMarkdown>
+          </motion.div>
+        </section>
+      )}
 
-      {/* Recipe Content */}
       <section className="py-12 md:py-16">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-12">
@@ -383,7 +389,9 @@ function RecipeDetailContent() {
                     {recipe.tips.map((tip, index) => (
                       <li key={tip.id || index} className="flex items-start gap-3">
                         <span className="text-[var(--accent-primary)] mt-1">•</span>
-                        <span className="text-gray-300">{tip.content}</span>
+                        <div className="prose prose-invert prose-sm max-w-none">
+                            <ReactMarkdown>{tip.content}</ReactMarkdown>
+                        </div>
                       </li>
                     ))}
                   </ul>

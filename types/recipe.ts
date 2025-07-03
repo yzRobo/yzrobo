@@ -12,7 +12,6 @@ export interface Tag {
   slug: string;
 }
 
-// CORRECTED: Added 'export' to the enum
 export enum ThumbnailDisplay {
   HERO = 'HERO',
   INGREDIENTS = 'INGREDIENTS',
@@ -24,6 +23,7 @@ export interface Recipe {
   title: string;
   cuisine?: string;
   description: string;
+  story?: string | null; // <-- Add this line
   prepTime: string;
   cookTime: string;
   totalTime: string;
@@ -35,10 +35,7 @@ export interface Recipe {
   heroImageAlt?: string | null;
   ingredientsImage?: string | null;
   ingredientsImageAlt?: string | null;
-  
-  // CORRECTED: Added the property to the interface
   thumbnailDisplay?: ThumbnailDisplay;
-
   ingredients: Ingredient[];
   instructions: Instruction[];
   tips?: Tip[];

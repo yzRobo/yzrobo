@@ -33,6 +33,7 @@ model Recipe {
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
   publishedAt         DateTime?
+  story               String? 
   ingredients         Ingredient[]
   instructions        Instruction[]
   nutrition           Nutrition?

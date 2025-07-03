@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
     const {
       title,
       description,
+      story, // <-- Destructured the new field
       cuisine,
       prepTime,
       cookTime,
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest) {
       ingredients,
       instructions,
       tips,
-      nutrition, // This can now be null or an object
+      nutrition,
       tags,
       heroImage,
       ingredientsImage,
@@ -129,6 +130,7 @@ export async function POST(request: NextRequest) {
         slug,
         title,
         description,
+        story, //
         cuisine,
         prepTime,
         cookTime,
@@ -166,7 +168,6 @@ export async function POST(request: NextRequest) {
             order: index,
           })),
         } : undefined,
-        // Updated nutrition handling - only create if nutrition data is provided
         nutrition: nutrition && nutrition.calories ? {
           create: {
             calories: parseInt(nutrition.calories),
