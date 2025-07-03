@@ -21,7 +21,7 @@ import RecipeSearch from '../components/RecipeSearch';
 import { RecipeGridSkeleton } from '../components/LoadingStates';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { Recipe, Tag } from '@/types/recipe';
-import { mdiPasta } from '@mdi/js';
+import { mdiPasta, mdiFoodSteak  } from '@mdi/js';
 import Icon from '@mdi/react';
 
 // Helper to get an icon for a tag
@@ -32,6 +32,7 @@ const getTagIcon = (slug: string) => {
       'side': <FaLeaf />, 'side-dish': <FaLeaf />,
       'italian': <MdLocalPizza />,
       'pasta': <Icon path={mdiPasta} size={1} />, 
+      'steak': <Icon path={mdiFoodSteak} size={1} />, 
       'grilled': <MdOutdoorGrill />,
       'bbq': <FaFire />, 'bbq-smoking': <FaFire />,
       'rice': <FaBowlRice /> ,
