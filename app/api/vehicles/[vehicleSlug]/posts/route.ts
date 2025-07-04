@@ -5,7 +5,7 @@ import { put } from '@vercel/blob';
 
 export async function GET(
   request: NextRequest,
-  context: { params: { vehicleSlug: string } }
+  context: { params: Promise<{ vehicleSlug: string }> }
 ) {
   try {
     const { vehicleSlug } = await context.params;
@@ -50,7 +50,7 @@ export async function GET(
 // POST /api/vehicles/[vehicleSlug]/posts - Create a new post
 export async function POST(
   request: NextRequest,
-  context: { params: { vehicleSlug: string } }
+  context: { params: Promise<{ vehicleSlug: string }> }
 ) {
   try {
     const { vehicleSlug } = await context.params;

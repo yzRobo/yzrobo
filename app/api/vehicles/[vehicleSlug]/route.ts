@@ -6,7 +6,7 @@ import { put } from '@vercel/blob';
 // GET /api/vehicles/[vehicleSlug] - Get a single vehicle
 export async function GET(
   request: NextRequest,
-  context: { params: { vehicleSlug: string } }
+  context: { params: Promise<{ vehicleSlug: string }> }
 ) {
   try {
     const { vehicleSlug } = await context.params;
@@ -36,7 +36,7 @@ export async function GET(
 // PUT /api/vehicles/[vehicleSlug] - Update a vehicle's overview
 export async function PUT(
   request: NextRequest,
-  context: { params: { vehicleSlug: string } }
+  context: { params: Promise<{ vehicleSlug: string }> }
 ) {
   try {
     const { vehicleSlug } = await context.params;

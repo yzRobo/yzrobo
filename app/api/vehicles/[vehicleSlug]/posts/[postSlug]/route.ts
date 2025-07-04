@@ -6,7 +6,7 @@ import { put } from '@vercel/blob';
 // GET /api/vehicles/[vehicleSlug]/posts/[postSlug]
 export async function GET(
   request: NextRequest,
-  context: { params: { vehicleSlug: string; postSlug: string } }
+  context: { params: Promise<{ vehicleSlug: string; postSlug: string }> }
 ) {
   try {
     const { vehicleSlug, postSlug } = await context.params;
@@ -44,7 +44,7 @@ export async function GET(
 // PUT /api/vehicles/[vehicleSlug]/posts/[postSlug]
 export async function PUT(
   request: NextRequest,
-  context: { params: { vehicleSlug: string; postSlug: string } }
+  context: { params: Promise<{ vehicleSlug: string; postSlug: string }> }
 ) {
   try {
     const { vehicleSlug, postSlug } = await context.params;
@@ -122,7 +122,7 @@ export async function PUT(
 // DELETE /api/vehicles/[vehicleSlug]/posts/[postSlug]
 export async function DELETE(
   request: NextRequest,
-  context: { params: { vehicleSlug: string; postSlug: string } }
+  context: { params: Promise<{ vehicleSlug: string; postSlug: string }> }
 ) {
   try {
     const { vehicleSlug, postSlug } = await context.params;
