@@ -3,10 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { put } from '@vercel/blob';
 
-// GET /api/vehicles/[vehicleSlug]/posts - Get all posts for a vehicle
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ vehicleSlug: string }> }
+  context: { params: { vehicleSlug: string } }
 ) {
   try {
     const { vehicleSlug } = await context.params;
@@ -51,13 +50,12 @@ export async function GET(
 // POST /api/vehicles/[vehicleSlug]/posts - Create a new post
 export async function POST(
   request: NextRequest,
-  context: { params: Promise<{ vehicleSlug: string }> }
+  context: { params: { vehicleSlug: string } }
 ) {
   try {
     const { vehicleSlug } = await context.params;
     const body = await request.json();
     
-    // Find the vehicle first
     const vehicle = await prisma.vehicle.findUnique({
       where: { slug: vehicleSlug },
     });
@@ -76,13 +74,11 @@ export async function POST(
       heroImage,
     } = body;
     
-    // Generate slug from title
     const baseSlug = title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
     
-    // Ensure unique slug within the vehicle
     let slug = baseSlug;
     let counter = 1;
     while (await prisma.vehicleBlogPost.findFirst({
@@ -92,7 +88,6 @@ export async function POST(
       counter++;
     }
     
-    // Handle image upload
     let heroImageUrl = null;
     if (heroImage && typeof heroImage === 'string' && heroImage.startsWith('data:')) {
       const base64Data = heroImage.split(',')[1];
@@ -102,6 +97,7 @@ export async function POST(
       const blob = await put(filename, buffer, {
         access: 'public',
         contentType: 'image/jpeg',
+        addRandomSuffix: true,
       });
       
       heroImageUrl = blob.url;

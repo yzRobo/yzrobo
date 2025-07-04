@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { put } from '@vercel/blob';
 
-// GET /api/vehicles/[vehicleSlug]/posts/[postSlug] - Get a single post
+// GET /api/vehicles/[vehicleSlug]/posts/[postSlug]
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ vehicleSlug: string; postSlug: string }> }
+  context: { params: { vehicleSlug: string; postSlug: string } }
 ) {
   try {
     const { vehicleSlug, postSlug } = await context.params;
@@ -41,10 +41,10 @@ export async function GET(
   }
 }
 
-// PUT /api/vehicles/[vehicleSlug]/posts/[postSlug] - Update a post
+// PUT /api/vehicles/[vehicleSlug]/posts/[postSlug]
 export async function PUT(
   request: NextRequest,
-  context: { params: Promise<{ vehicleSlug: string; postSlug: string }> }
+  context: { params: { vehicleSlug: string; postSlug: string } }
 ) {
   try {
     const { vehicleSlug, postSlug } = await context.params;
@@ -80,7 +80,6 @@ export async function PUT(
         : (body.published === false ? null : existingPost.publishedAt),
     };
     
-    // Handle image update
     if (body.heroImage && body.heroImage.startsWith('data:')) {
       const base64Data = body.heroImage.split(',')[1];
       const buffer = Buffer.from(base64Data, 'base64');
@@ -120,10 +119,10 @@ export async function PUT(
   }
 }
 
-// DELETE /api/vehicles/[vehicleSlug]/posts/[postSlug] - Delete a post
+// DELETE /api/vehicles/[vehicleSlug]/posts/[postSlug]
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ vehicleSlug: string; postSlug: string }> }
+  context: { params: { vehicleSlug: string; postSlug: string } }
 ) {
   try {
     const { vehicleSlug, postSlug } = await context.params;

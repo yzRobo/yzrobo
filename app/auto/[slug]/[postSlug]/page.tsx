@@ -255,12 +255,18 @@ export default function VehicleBlogPostPage() {
                     {children}
                   </blockquote>
                 ),
-                code: ({ inline, children }) => 
-                  inline ? (
-                    <code className="px-1.5 py-0.5 bg-white/10 rounded text-sm">{children}</code>
+                code: ({ className, children, ...props }) => {
+                  const match = /language-(\w+)/.exec(className || '');
+                  return !match ? (
+                    <code {...props} className="px-1.5 py-0.5 bg-white/10 rounded text-sm">
+                      {children}
+                    </code>
                   ) : (
-                    <code className="block p-4 bg-white/5 rounded-lg overflow-x-auto text-sm">{children}</code>
-                  ),
+                    <code {...props} className={`${className} block p-4 bg-white/5 rounded-lg overflow-x-auto text-sm`}>
+                      {children}
+                    </code>
+                  );
+                },
                 img: ({ src, alt }) => (
                   <figure className="my-8">
                     <img 

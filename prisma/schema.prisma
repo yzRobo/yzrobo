@@ -1,18 +1,25 @@
-// prisma/schema.prisma
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("POSTGRES_URL")
 }
+
+//-------------------------------------------------
+// RECIPE MODELS
+//-------------------------------------------------
 
 model Recipe {
   id                  String             @id @default(cuid())
   slug                String             @unique
   title               String
   description         String
+  story               String?
   cuisine             String?
   prepTime            String
   cookTime            String
@@ -25,21 +32,17 @@ model Recipe {
   heroImageAlt        String?
   ingredientsImage    String?
   ingredientsImageAlt String?
-  
-  // --- ADD THIS LINE ---
-  thumbnailDisplay    ThumbnailDisplay   @default(HERO)
-
+  thumbnailDisplay    ThumbnailDisplay?  @default(HERO)
   authorId            String?
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
   publishedAt         DateTime?
-  story               String? 
   ingredients         Ingredient[]
   instructions        Instruction[]
-  nutrition           Nutrition?
-  reviews             Review[]
   tips                Tip[]
+  nutrition           Nutrition?
   tags                Tag[]              @relation("RecipeToTag")
+  reviews             Review[]
 
   @@index([slug])
   @@index([featured])
@@ -53,8 +56,8 @@ model Ingredient {
   notes    String?
   group    String?
   order    Int
-  recipeId String
   recipe   Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId String
 }
 
 model Instruction {
@@ -65,18 +68,18 @@ model Instruction {
   image       String?
   imageAlt    String?
   time        String?
-  recipeId    String
   recipe      Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId    String
 
   @@index([recipeId, step])
 }
 
 model Tip {
-  id       String @id @default(cuid())
-  content  String
-  order    Int
+  id      String @id @default(cuid())
+  content String
+  order   Int
+  recipe  Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId String
-  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 }
 
 model Nutrition {
@@ -88,8 +91,8 @@ model Nutrition {
   fiber    String?
   sugar    String?
   sodium   String?
-  recipeId String  @unique
   recipe   Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId String  @unique
 }
 
 model Tag {
@@ -103,56 +106,86 @@ model Review {
   id        String   @id @default(cuid())
   rating    Int
   comment   String?
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId  String
   createdAt DateTime @default(now())
-  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
   @@index([recipeId])
 }
 
-model Modification {
-  id        String   @id
-  category  String
-  items     String[]
-  order     Int      @default(0)
-  vehicleId String
-  Vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-}
-
-model Spec {
-  id        String @id
-  label     String
-  value     String
-  order     Int    @default(0)
-  vehicleId String
-  Vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-}
+//-------------------------------------------------
+// VEHICLE MODELS
+//-------------------------------------------------
 
 model Vehicle {
-  id            String          @id
-  slug          String          @unique
+  id            String            @id @default(cuid())
+  slug          String            @unique
   name          String
   category      String
   heroImage     String?
   gallery       String[]
   story         String[]
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime
-  Modification  Modification[]
-  Spec          Spec[]
-  VehicleUpdate VehicleUpdate[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  modifications Modification[]
+  specs         Spec[]
+  blogPosts     VehicleBlogPost[]
 }
 
-model VehicleUpdate {
-  id        String   @id
-  title     String
-  content   String
-  published Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime
+model Modification {
+  id        String   @id @default(cuid())
+  category  String
+  items     String[]
+  order     Int      @default(0)
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   vehicleId String
-  Vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 }
+
+model Spec {
+  id        String  @id @default(cuid())
+  label     String
+  value     String
+  order     Int     @default(0)
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vehicleId String
+}
+
+//-------------------------------------------------
+// NEW VEHICLE BLOG MODELS
+//-------------------------------------------------
+
+model VehicleBlogPost {
+  id           String       @id @default(cuid())
+  slug         String
+  title        String
+  excerpt      String?
+  content      String
+  heroImage    String?
+  heroImageAlt String?
+  published    Boolean      @default(false)
+  featured     Boolean      @default(false)
+  publishedAt  DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  vehicle      Vehicle      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vehicleId    String
+  tags         VehicleTag[] @relation("VehicleBlogPostToTag")
+
+  @@unique([vehicleId, slug])
+  @@index([slug])
+  @@index([vehicleId, published, publishedAt])
+}
+
+model VehicleTag {
+  id    String            @id @default(cuid())
+  name  String            @unique
+  slug  String            @unique
+  posts VehicleBlogPost[] @relation("VehicleBlogPostToTag")
+}
+
+//-------------------------------------------------
+// ENUMS
+//-------------------------------------------------
 
 enum Difficulty {
   easy

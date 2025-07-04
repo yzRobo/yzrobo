@@ -10,6 +10,11 @@ export async function GET() {
         { category: 'asc' },
         { name: 'asc' }
       ],
+
+      include: {
+        specs: { orderBy: { order: 'asc' } },
+        modifications: { orderBy: { order: 'asc' } },
+      }
     });
     
     return NextResponse.json(vehicles);

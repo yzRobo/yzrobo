@@ -1,48 +1,190 @@
 // app/admin/vehicles/page.tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { FaPlus, FaEdit, FaTrash, FaEye, FaEyeSlash, FaImage, FaUpload, FaCar, FaMotorcycle, FaTruck } from 'react-icons/fa';
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaPlus, FaEdit, FaTrash, FaEye, FaEyeSlash, FaImage, FaUpload, FaCar, FaMotorcycle, FaTruckPickup, FaTimes } from 'react-icons/fa';
 import Navigation from '../../components/Navigation';
+import type { Vehicle, VehicleBlogPost, VehicleTag, Spec, Modification } from '@/types/vehicle';
 
-// Type definitions (since we're importing from a file that doesn't exist yet)
-interface VehicleTag {
-  id: string;
-  name: string;
-  slug: string;
-}
+// --- Reusable Form Input Component ---
+const FormInput = ({ label, value, onChange, ...props }: any) => (
+  <div>
+    <label className="block text-sm font-medium mb-2">{label}</label>
+    <input
+      value={value}
+      onChange={onChange}
+      className="w-full px-4 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none"
+      {...props}
+    />
+  </div>
+);
 
-interface VehicleBlogPost {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt?: string;
-  content: string;
-  heroImage?: string | null;
-  heroImageAlt?: string | null;
-  published: boolean;
-  featured: boolean;
-  publishedAt?: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-  vehicleId: string;
-  tags?: VehicleTag[];
-}
+// --- Reusable Textarea Component ---
+const FormTextarea = ({ label, value, onChange, ...props }: any) => (
+  <div>
+    <label className="block text-sm font-medium mb-2">{label}</label>
+    <textarea
+      value={value}
+      onChange={onChange}
+      className="w-full px-4 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none"
+      {...props}
+    />
+  </div>
+);
 
-interface Vehicle {
-  id: string;
-  slug: string;
-  name: string;
-  category: string;
-  heroImage?: string | null;
-  gallery?: string[];
-  story?: string[];
-  createdAt: Date;
-  updatedAt: Date;
-}
+// --- Component for Editing Vehicle Overview ---
+const VehicleOverviewForm = ({
+  vehicle,
+  onUpdate,
+}: {
+  vehicle: Vehicle;
+  onUpdate: () => void;
+}) => {
+  const [formData, setFormData] = useState(vehicle);
+  const [saving, setSaving] = useState(false);
 
-// Blog Post Form Component
+  useEffect(() => {
+    setFormData(vehicle);
+  }, [vehicle]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'heroImage' | 'gallery') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      if (field === 'heroImage') {
+        setFormData(prev => ({ ...prev, heroImage: base64String }));
+      } else {
+        setFormData(prev => ({ ...prev, gallery: [...(prev.gallery || []), base64String] }));
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+  
+  const handleSpecChange = (index: number, field: 'label' | 'value', value: string) => {
+      const newSpecs = [...(formData.specs || [])];
+      newSpecs[index] = { ...newSpecs[index], [field]: value };
+      setFormData(prev => ({ ...prev, specs: newSpecs }));
+  };
+
+  const handleModChange = (index: number, field: 'category' | 'items', value: string | string[]) => {
+      const newMods = [...(formData.modifications || [])];
+      newMods[index] = { ...newMods[index], [field]: value };
+      setFormData(prev => ({ ...prev, modifications: newMods }));
+  };
+
+  const addSpec = () => setFormData(prev => ({ ...prev, specs: [...(prev.specs || []), { id: `new-${Date.now()}`, label: '', value: '', order: 0, vehicleId: vehicle.id }] }));
+  const removeSpec = (index: number) => setFormData(prev => ({ ...prev, specs: (prev.specs || []).filter((_, i) => i !== index) }));
+  
+  const addMod = () => setFormData(prev => ({ ...prev, modifications: [...(prev.modifications || []), { id: `new-${Date.now()}`, category: '', items: [], order: 0, vehicleId: vehicle.id }] }));
+  const removeMod = (index: number) => setFormData(prev => ({ ...prev, modifications: (prev.modifications || []).filter((_, i) => i !== index) }));
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const response = await fetch(`/api/vehicles/${vehicle.slug}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            ...formData,
+            story: Array.isArray(formData.story) ? formData.story : (formData.story as unknown as string).split('\n').filter(Boolean),
+            modifications: (formData.modifications || []).map(mod => ({
+                ...mod,
+                items: typeof mod.items === 'string' ? (mod.items as string).split('\n').filter(Boolean) : mod.items,
+            }))
+        }),
+      });
+
+      if (response.ok) {
+        alert('Vehicle updated successfully!');
+        onUpdate();
+      } else {
+        const error = await response.json();
+        alert(`Failed: ${error.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      alert('An error occurred while saving.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <motion.form 
+        key={vehicle.id}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        onSubmit={handleSubmit} 
+        className="space-y-8"
+    >
+        <FormInput label="Vehicle Name" value={formData.name} onChange={(e: any) => setFormData(p => ({...p, name: e.target.value}))} />
+        <FormInput label="Category" value={formData.category} onChange={(e: any) => setFormData(p => ({...p, category: e.target.value}))} />
+        <FormTextarea label="Story (one paragraph per line)" value={(formData.story || []).join('\n')} onChange={(e: any) => setFormData(p => ({...p, story: e.target.value.split('\n')}))} rows={5} />
+        
+        <div>
+            <label className="block text-sm font-medium mb-2">Hero Image</label>
+            {formData.heroImage && <img src={formData.heroImage} alt="Hero" className="w-48 h-auto rounded-lg mb-2" />}
+            <input type="file" accept="image/*" onChange={e => handleImageChange(e, 'heroImage')} className="text-sm" />
+        </div>
+
+        <div>
+            <label className="block text-sm font-medium mb-2">Gallery</label>
+            <div className="flex flex-wrap gap-4">
+                {(formData.gallery || []).map((img, i) => (
+                    <div key={i} className="relative">
+                        <img src={img} alt="Gallery" className="w-32 h-32 object-cover rounded-lg" />
+                        <button type="button" onClick={() => setFormData(p => ({...p, gallery: p.gallery?.filter((_, idx) => idx !== i)}))} className="absolute top-1 right-1 bg-red-600/80 text-white p-1 rounded-full"><FaTimes size={12}/></button>
+                    </div>
+                ))}
+                <label className="w-32 h-32 border-2 border-dashed border-white/20 rounded-lg flex items-center justify-center cursor-pointer hover:border-[var(--accent-primary)]">
+                    <FaPlus />
+                    <input type="file" accept="image/*" onChange={e => handleImageChange(e, 'gallery')} className="hidden" />
+                </label>
+            </div>
+        </div>
+
+        <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Specifications</h3>
+            {(formData.specs || []).map((spec, i) => (
+                <div key={spec.id} className="flex gap-2 items-end">
+                    <div className="flex-1"><FormInput label="Label" value={spec.label} onChange={(e: any) => handleSpecChange(i, 'label', e.target.value)} /></div>
+                    <div className="flex-1"><FormInput label="Value" value={spec.value} onChange={(e: any) => handleSpecChange(i, 'value', e.target.value)} /></div>
+                    <button type="button" onClick={() => removeSpec(i)} className="p-3 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600/40"><FaTrash /></button>
+                </div>
+            ))}
+            <button type="button" onClick={addSpec} className="text-sm text-[var(--accent-primary)] hover:underline">+ Add Specification</button>
+        </div>
+
+        <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Modifications</h3>
+            {(formData.modifications || []).map((mod, i) => (
+                <div key={mod.id} className="flex gap-2 items-start p-4 bg-black/30 rounded-lg">
+                    <div className="flex-1 space-y-2">
+                       <FormInput label="Mod Category" value={mod.category} onChange={(e: any) => handleModChange(i, 'category', e.target.value)} />
+                       <FormTextarea label="Items (one per line)" value={Array.isArray(mod.items) ? mod.items.join('\n') : ''} onChange={(e: any) => handleModChange(i, 'items', e.target.value.split('\n'))} rows={4} />
+                    </div>
+                    <button type="button" onClick={() => removeMod(i)} className="p-3 mt-8 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600/40"><FaTrash /></button>
+                </div>
+            ))}
+            <button type="button" onClick={addMod} className="text-sm text-[var(--accent-primary)] hover:underline">+ Add Modification Section</button>
+        </div>
+
+        <div className="flex justify-end pt-4 border-t border-white/10">
+            <button type="submit" disabled={saving} className="px-8 py-3 bg-[var(--accent-primary)] rounded-full font-medium hover:bg-opacity-80 transition-colors disabled:opacity-50">
+                {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+        </div>
+    </motion.form>
+  );
+};
+
+
+// --- Component for Creating/Editing Blog Posts ---
 const BlogPostForm = ({ 
   onClose, 
   vehicleSlug, 
@@ -67,20 +209,19 @@ const BlogPostForm = ({
   const [newTag, setNewTag] = useState('');
 
   useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const res = await fetch('/api/vehicles/tags');
+        if (res.ok) {
+          const data = await res.json();
+          setAvailableTags(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch tags", error);
+      }
+    };
     fetchTags();
   }, []);
-
-  const fetchTags = async () => {
-    try {
-      const res = await fetch('/api/vehicles/tags');
-      if (res.ok) {
-        const data = await res.json();
-        setAvailableTags(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch tags", error);
-    }
-  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -171,173 +312,53 @@ const BlogPostForm = ({
         </h2>
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Hero Image */}
           <div>
             <label className="block text-sm font-medium mb-2">Hero Image</label>
             <div className="space-y-4">
               {heroImagePreview ? (
                 <div className="relative">
-                  <img 
-                    src={heroImagePreview} 
-                    alt="Post preview" 
-                    className="w-full max-h-64 object-cover rounded-lg" 
-                  />
-                  <button 
-                    type="button" 
-                    onClick={() => {
-                      setHeroImagePreview(null);
-                      const fileInput = document.getElementById('hero-image') as HTMLInputElement;
-                      if (fileInput) fileInput.value = '';
-                    }} 
-                    className="absolute top-2 right-2 p-2 bg-red-500/80 text-white rounded-full hover:bg-red-500 transition-colors"
-                  >
-                    <FaTrash />
-                  </button>
+                  <img src={heroImagePreview} alt="Post preview" className="w-full max-h-64 object-cover rounded-lg" />
+                  <button type="button" onClick={() => { setHeroImagePreview(null); const input = document.getElementById('hero-image-post') as HTMLInputElement; if(input) input.value = ''; }} className="absolute top-2 right-2 p-2 bg-red-500/80 text-white rounded-full hover:bg-red-500"><FaTrash /></button>
                 </div>
               ) : (
-                <div className="border-2 border-dashed border-white/20 rounded-lg p-8 text-center hover:border-[var(--accent-primary)]/50 transition-colors">
+                <div className="border-2 border-dashed border-white/20 rounded-lg p-8 text-center hover:border-[var(--accent-primary)]/50">
                   <FaImage className="mx-auto text-4xl text-gray-500 mb-2" />
                   <p className="text-gray-400 mb-2">No image selected</p>
-                  <label 
-                    htmlFor="hero-image" 
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-lg cursor-pointer hover:bg-white/20 transition-colors"
-                  >
-                    <FaUpload /> Choose Image
-                  </label>
+                  <label htmlFor="hero-image-post" className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-lg cursor-pointer hover:bg-white/20"><FaUpload /> Choose Image</label>
                 </div>
               )}
-              <input 
-                id="hero-image" 
-                type="file" 
-                accept="image/*" 
-                onChange={handleImageChange} 
-                className="hidden" 
-              />
+              <input id="hero-image-post" type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
             </div>
           </div>
 
-          {/* Title */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Title</label>
-            <input 
-              type="text" 
-              required 
-              value={formData.title} 
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })} 
-              className="w-full px-4 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" 
-            />
-          </div>
+          <FormInput label="Title" required value={formData.title} onChange={(e: any) => setFormData({ ...formData, title: e.target.value })} />
+          <FormTextarea label="Excerpt (Optional)" value={formData.excerpt} onChange={(e: any) => setFormData({ ...formData, excerpt: e.target.value })} rows={2} placeholder="A short summary that appears in blog listings" />
+          <FormTextarea label="Content (Markdown supported)" required value={formData.content} onChange={(e: any) => setFormData({ ...formData, content: e.target.value })} rows={10} />
 
-          {/* Excerpt */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Excerpt (Optional)</label>
-            <p className="text-xs text-gray-500 mb-2">A short summary that appears in blog listings</p>
-            <textarea 
-              value={formData.excerpt} 
-              onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })} 
-              rows={2}
-              className="w-full px-4 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" 
-            />
-          </div>
-
-          {/* Content */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Content</label>
-            <p className="text-xs text-gray-500 mb-2">Markdown is supported</p>
-            <textarea 
-              required
-              value={formData.content} 
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })} 
-              rows={10}
-              className="w-full px-4 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none font-mono text-sm" 
-            />
-          </div>
-
-          {/* Tags */}
           <div>
             <label className="block text-sm font-medium mb-2">Tags</label>
             <div className="flex flex-wrap gap-2 mb-2">
               {formData.tags.map((tag, index) => (
-                <span 
-                  key={index} 
-                  className="px-3 py-1 bg-white/10 rounded-full text-sm flex items-center gap-2"
-                >
+                <span key={index} className="px-3 py-1 bg-white/10 rounded-full text-sm flex items-center gap-2">
                   {tag}
-                  <button 
-                    type="button" 
-                    onClick={() => setFormData({ 
-                      ...formData, 
-                      tags: formData.tags.filter((_, i) => i !== index) 
-                    })}
-                    className="text-red-400 hover:text-red-300"
-                  >
-                    ×
-                  </button>
+                  <button type="button" onClick={() => setFormData({ ...formData, tags: formData.tags.filter((_, i) => i !== index) })} className="text-red-400 hover:text-red-300">×</button>
                 </span>
               ))}
             </div>
             <div className="flex gap-2">
-              <input
-                type="text"
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                onKeyDown={(e) => { 
-                  if (e.key === 'Enter') { 
-                    e.preventDefault(); 
-                    handleAddTag(); 
-                  } 
-                }}
-                placeholder="Add a tag"
-                className="flex-1 px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none text-sm"
-              />
-              <button 
-                type="button" 
-                onClick={handleAddTag} 
-                className="px-4 py-2 bg-white/10 text-sm rounded-lg hover:bg-white/20 transition-colors"
-              >
-                Add Tag
-              </button>
+              <input type="text" value={newTag} onChange={(e) => setNewTag(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); } }} placeholder="Add a tag" className="flex-1 px-3 py-2 bg-black/50 border border-white/10 rounded-lg text-sm" />
+              <button type="button" onClick={handleAddTag} className="px-4 py-2 bg-white/10 text-sm rounded-lg hover:bg-white/20">Add Tag</button>
             </div>
           </div>
 
-          {/* Options */}
           <div className="flex gap-6">
-            <label className="flex items-center gap-2">
-              <input 
-                type="checkbox" 
-                checked={formData.featured} 
-                onChange={(e) => setFormData({ ...formData, featured: e.target.checked })} 
-                className="w-4 h-4" 
-              />
-              <span className="text-sm">Featured Post</span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input 
-                type="checkbox" 
-                checked={formData.published} 
-                onChange={(e) => setFormData({ ...formData, published: e.target.checked })} 
-                className="w-4 h-4" 
-              />
-              <span className="text-sm">Publish Immediately</span>
-            </label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={formData.featured} onChange={(e) => setFormData({ ...formData, featured: e.target.checked })} className="w-4 h-4" /> <span className="text-sm">Featured Post</span></label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={formData.published} onChange={(e) => setFormData({ ...formData, published: e.target.checked })} className="w-4 h-4" /> <span className="text-sm">Publish Immediately</span></label>
           </div>
 
-          {/* Actions */}
           <div className="flex gap-4 justify-end pt-4 border-t border-white/10">
-            <button 
-              type="button" 
-              onClick={onClose} 
-              className="px-6 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
-            >
-              Cancel
-            </button>
-            <button 
-              type="submit" 
-              disabled={saving} 
-              className="px-6 py-2 bg-[var(--accent-primary)] rounded-lg hover:bg-opacity-80 transition-colors disabled:opacity-50 flex items-center gap-2"
-            >
-              {saving ? 'Saving...' : (editingPost ? 'Update Post' : 'Create Post')}
-            </button>
+            <button type="button" onClick={onClose} className="px-6 py-2 bg-white/10 rounded-lg hover:bg-white/20">Cancel</button>
+            <button type="submit" disabled={saving} className="px-6 py-2 bg-[var(--accent-primary)] rounded-lg hover:bg-opacity-80 disabled:opacity-50">{saving ? 'Saving...' : (editingPost ? 'Update Post' : 'Create Post')}</button>
           </div>
         </form>
       </motion.div>
@@ -345,25 +366,44 @@ const BlogPostForm = ({
   );
 };
 
-// Vehicle icon helper
+// --- Helper to get vehicle icon ---
 const getVehicleIcon = (category: string) => {
   switch (category.toLowerCase()) {
     case 'motorcycle': return <FaMotorcycle />;
     case 'car': return <FaCar />;
-    case 'obs truck': return <FaTruck />;
+    case 'obs truck': return <FaTruckPickup />;
     default: return <FaCar />;
   }
 };
 
+// --- Main Page Component ---
 export default function VehicleAdminPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [posts, setPosts] = useState<VehicleBlogPost[]>([]);
-  const [showForm, setShowForm] = useState(false);
+  const [showPostForm, setShowPostForm] = useState(false);
   const [editingPost, setEditingPost] = useState<VehicleBlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
+  const [view, setView] = useState<'posts' | 'overview'>('posts');
+
+  const fetchVehicles = useCallback(async (slugToSelect?: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/vehicles');
+      const data = await response.json();
+      setVehicles(data);
+      if (data.length > 0) {
+        const vehicleToSelect = data.find((v: Vehicle) => v.slug === slugToSelect) || data[0];
+        setSelectedVehicle(vehicleToSelect);
+      }
+    } catch (error) {
+      console.error('Error fetching vehicles:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const isAuth = sessionStorage.getItem('adminAuth');
@@ -373,13 +413,34 @@ export default function VehicleAdminPage() {
     } else {
       setLoading(false);
     }
+  }, [fetchVehicles]);
+
+  const fetchPosts = useCallback(async (vehicleSlug: string) => {
+    try {
+        const response = await fetch(`/api/vehicles/${vehicleSlug}/posts`);
+        if (!response.ok) {
+            console.error("Failed to fetch posts, status:", response.status);
+            setPosts([]);
+            return;
+        }
+        const data = await response.json();
+        if (Array.isArray(data)) {
+            setPosts(data);
+        } else {
+            console.error("API did not return an array for posts:", data);
+            setPosts([]);
+        }
+    } catch (error) {
+        console.error('Error fetching posts:', error);
+        setPosts([]);
+    }
   }, []);
 
   useEffect(() => {
     if (selectedVehicle) {
       fetchPosts(selectedVehicle.slug);
     }
-  }, [selectedVehicle]);
+  }, [selectedVehicle, fetchPosts]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -389,7 +450,6 @@ export default function VehicleAdminPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
       });
-
       if (response.ok) {
         setAuthenticated(true);
         sessionStorage.setItem('adminAuth', 'true');
@@ -402,119 +462,56 @@ export default function VehicleAdminPage() {
     }
   };
 
-  const fetchVehicles = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch('/api/vehicles');
-      const data = await response.json();
-      setVehicles(data);
-      if (data.length > 0) {
-        setSelectedVehicle(data[0]);
-      }
-    } catch (error) {
-      console.error('Error fetching vehicles:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchPosts = async (vehicleSlug: string) => {
-    try {
-      const response = await fetch(`/api/vehicles/${vehicleSlug}/posts`);
-      const data = await response.json();
-      setPosts(data);
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-    }
-  };
-
-  const handleCloseForm = () => {
-    setShowForm(false);
+  const handleClosePostForm = () => {
+    setShowPostForm(false);
     setEditingPost(null);
     if (selectedVehicle) {
       fetchPosts(selectedVehicle.slug);
     }
   };
 
-  const handleEdit = (post: VehicleBlogPost) => {
+  const handleEditPost = (post: VehicleBlogPost) => {
     setEditingPost(post);
-    setShowForm(true);
+    setShowPostForm(true);
   };
 
-  const handleDelete = async (post: VehicleBlogPost) => {
-    if (!selectedVehicle) return;
-    
-    if (!confirm(`Are you sure you want to delete "${post.title}"?`)) {
-      return;
-    }
-    
+  const handleDeletePost = async (post: VehicleBlogPost) => {
+    if (!selectedVehicle || !confirm(`Are you sure you want to delete "${post.title}"?`)) return;
     try {
-      const response = await fetch(`/api/vehicles/${selectedVehicle.slug}/posts/${post.slug}`, {
-        method: 'DELETE',
-      });
-      
-      if (response.ok) {
-        alert('Post deleted successfully!');
-        fetchPosts(selectedVehicle.slug);
-      } else {
-        alert('Failed to delete post');
-      }
+      await fetch(`/api/vehicles/${selectedVehicle.slug}/posts/${post.slug}`, { method: 'DELETE' });
+      alert('Post deleted!');
+      fetchPosts(selectedVehicle.slug);
     } catch (error) {
-      console.error('Error deleting post:', error);
       alert('Error deleting post');
     }
   };
 
   const handleTogglePublish = async (post: VehicleBlogPost) => {
     if (!selectedVehicle) return;
-    
     try {
-      const response = await fetch(`/api/vehicles/${selectedVehicle.slug}/posts/${post.slug}`, {
+      await fetch(`/api/vehicles/${selectedVehicle.slug}/posts/${post.slug}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...post,
-          published: !post.published,
-          tags: post.tags?.map(t => t.name)
-        }),
+        body: JSON.stringify({ ...post, published: !post.published, tags: post.tags?.map(t => t.name) }),
       });
-
-      if (response.ok) {
-        alert(`Post ${post.published ? 'unpublished' : 'published'} successfully!`);
-        fetchPosts(selectedVehicle.slug);
-      } else {
-        const error = await response.json();
-        alert(`Failed to update post: ${error.error}`);
-      }
+      alert(`Post ${post.published ? 'unpublished' : 'published'}!`);
+      fetchPosts(selectedVehicle.slug);
     } catch (error) {
-      console.error('Error updating post:', error);
       alert('Error updating post');
     }
   };
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="w-full max-w-md p-8 bg-[var(--surface)] rounded-2xl">
-          <h1 className="text-2xl font-bold mb-6 text-center">Admin Access</h1>
-          <form onSubmit={handleAuth}>
-            <input
-              type="password"
-              placeholder="Enter admin password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none mb-4"
-              autoFocus
-            />
-            <button
-              type="submit"
-              className="w-full py-3 bg-[var(--accent-primary)] rounded-lg font-medium hover:bg-opacity-80 transition-colors"
-            >
-              Access Admin
-            </button>
-          </form>
+        <div className="min-h-screen bg-black text-white flex items-center justify-center">
+            <div className="w-full max-w-md p-8 bg-[var(--surface)] rounded-2xl">
+                <h1 className="text-2xl font-bold mb-6 text-center">Admin Access</h1>
+                <form onSubmit={handleAuth}>
+                    <input type="password" placeholder="Enter admin password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none mb-4" autoFocus />
+                    <button type="submit" className="w-full py-3 bg-[var(--accent-primary)] rounded-lg font-medium hover:bg-opacity-80 transition-colors">Access Admin</button>
+                </form>
+            </div>
         </div>
-      </div>
     );
   }
 
@@ -523,30 +520,16 @@ export default function VehicleAdminPage() {
       <Navigation />
       <section className="pt-32 pb-20">
         <div className="container mx-auto px-6">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-4xl font-bold">Vehicle Blog Admin</h1>
-          </div>
-
+          <h1 className="text-4xl font-bold mb-8">Vehicle Admin</h1>
           {loading ? (
-            <div className="text-center py-20">
-              <div className="animate-pulse text-2xl">Loading vehicles...</div>
-            </div>
+            <div className="text-center py-20"><div className="animate-pulse text-2xl">Loading vehicles...</div></div>
           ) : (
             <div className="grid lg:grid-cols-4 gap-8">
-              {/* Vehicle Selector */}
               <div className="lg:col-span-1">
                 <h2 className="text-xl font-semibold mb-4">Select Vehicle</h2>
                 <div className="space-y-2">
                   {vehicles.map((vehicle) => (
-                    <button
-                      key={vehicle.id}
-                      onClick={() => setSelectedVehicle(vehicle)}
-                      className={`w-full p-4 rounded-lg text-left transition-all ${
-                        selectedVehicle?.id === vehicle.id
-                          ? 'bg-[var(--accent-primary)] text-white'
-                          : 'bg-[var(--surface)] hover:bg-white/10'
-                      }`}
-                    >
+                    <button key={vehicle.id} onClick={() => { setSelectedVehicle(vehicle); setView('posts'); }} className={`w-full p-4 rounded-lg text-left transition-all ${selectedVehicle?.id === vehicle.id ? 'bg-[var(--accent-primary)] text-white' : 'bg-[var(--surface)] hover:bg-white/10'}`}>
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">{getVehicleIcon(vehicle.category)}</span>
                         <div>
@@ -559,88 +542,48 @@ export default function VehicleAdminPage() {
                 </div>
               </div>
 
-              {/* Posts List */}
               <div className="lg:col-span-3">
-                {selectedVehicle && (
+                {selectedVehicle ? (
                   <>
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-xl font-semibold">
-                        Blog Posts for {selectedVehicle.name}
-                      </h2>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => {
-                          setEditingPost(null);
-                          setShowForm(true);
-                        }}
-                        className="flex items-center gap-2 px-6 py-3 bg-[var(--accent-primary)] rounded-full font-medium"
-                      >
-                        <FaPlus /> New Post
-                      </motion.button>
+                    <div className="flex border-b border-white/10 mb-6">
+                        <button onClick={() => setView('posts')} className={`py-3 px-5 font-medium transition-colors ${view === 'posts' ? 'text-white border-b-2 border-[var(--accent-primary)]' : 'text-gray-400 hover:text-white'}`}>Blog Posts</button>
+                        <button onClick={() => setView('overview')} className={`py-3 px-5 font-medium transition-colors ${view === 'overview' ? 'text-white border-b-2 border-[var(--accent-primary)]' : 'text-gray-400 hover:text-white'}`}>Edit Overview</button>
                     </div>
 
-                    <div className="grid gap-4">
-                      {posts.length === 0 ? (
-                        <div className="text-center py-12 bg-[var(--surface)] rounded-xl">
-                          <p className="text-gray-400">No blog posts yet for this vehicle.</p>
-                        </div>
-                      ) : (
-                        posts.map((post) => (
-                          <div
-                            key={post.id}
-                            className="flex items-center justify-between p-4 bg-[var(--surface)] rounded-xl border border-white/10"
-                          >
-                            <div className="flex items-center gap-4 flex-1 min-w-0">
-                              {post.heroImage && (
-                                <img
-                                  src={post.heroImage}
-                                  alt={post.title}
-                                  className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
-                                />
-                              )}
-                              <div className="min-w-0">
-                                <h3 className="text-lg font-semibold truncate">{post.title}</h3>
-                                <div className="flex items-center gap-2 mt-1">
-                                  {post.featured && (
-                                    <span className="px-2 py-0.5 bg-[var(--accent-primary)] text-xs rounded-full">
-                                      FEATURED
-                                    </span>
-                                  )}
-                                  <span className="text-sm text-gray-400">
-                                    {new Date(post.createdAt).toLocaleDateString()}
-                                  </span>
+                    <AnimatePresence mode="wait">
+                        {view === 'posts' ? (
+                            <motion.div key="posts" initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}}>
+                                <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-xl font-semibold">Blog Posts for {selectedVehicle.name}</h2>
+                                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => { setEditingPost(null); setShowPostForm(true); }} className="flex items-center gap-2 px-6 py-3 bg-[var(--accent-primary)] rounded-full font-medium"><FaPlus /> New Post</motion.button>
                                 </div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 flex-shrink-0 ml-4">
-                              <button 
-                                onClick={() => handleEdit(post)} 
-                                className="p-2 hover:bg-white/10 rounded-lg transition-colors" 
-                                title="Edit post"
-                              >
-                                <FaEdit />
-                              </button>
-                              <button 
-                                onClick={() => handleTogglePublish(post)} 
-                                className="p-2 hover:bg-white/10 rounded-lg transition-colors" 
-                                title={post.published ? 'Unpublish post' : 'Publish post'}
-                              >
-                                {post.published ? <FaEyeSlash /> : <FaEye />}
-                              </button>
-                              <button 
-                                onClick={() => handleDelete(post)} 
-                                className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors" 
-                                title="Delete post"
-                              >
-                                <FaTrash />
-                              </button>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
+                                <div className="grid gap-4">
+                                  {posts.length === 0 ? (<div className="text-center py-12 bg-[var(--surface)] rounded-xl"><p className="text-gray-400">No blog posts yet.</p></div>) : (
+                                    posts.map((post) => (
+                                      <div key={post.id} className="flex items-center justify-between p-4 bg-[var(--surface)] rounded-xl border border-white/10">
+                                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                                          {post.heroImage && <img src={post.heroImage} alt={post.title} className="w-16 h-16 object-cover rounded-lg flex-shrink-0" />}
+                                          <div className="min-w-0"><h3 className="text-lg font-semibold truncate">{post.title}</h3><div className="flex items-center gap-2 mt-1">{post.featured && <span className="px-2 py-0.5 bg-[var(--accent-primary)] text-xs rounded-full">FEATURED</span>}<span className="text-sm text-gray-400">{new Date(post.createdAt).toLocaleDateString()}</span></div></div>
+                                        </div>
+                                        <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+                                          <button onClick={() => handleEditPost(post)} className="p-2 hover:bg-white/10 rounded-lg" title="Edit"><FaEdit /></button>
+                                          <button onClick={() => handleTogglePublish(post)} className="p-2 hover:bg-white/10 rounded-lg" title={post.published ? 'Unpublish' : 'Publish'}>{post.published ? <FaEyeSlash /> : <FaEye />}</button>
+                                          <button onClick={() => handleDeletePost(post)} className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg" title="Delete"><FaTrash /></button>
+                                        </div>
+                                      </div>
+                                    ))
+                                  )}
+                                </div>
+                            </motion.div>
+                        ) : (
+                            <motion.div key="overview" initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}}>
+                                <VehicleOverviewForm vehicle={selectedVehicle} onUpdate={() => fetchVehicles(selectedVehicle.slug)} />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                   </>
+                ) : (
+                    <div className="text-center py-20"><p className="text-gray-400">Select a vehicle to manage its content.</p></div>
                 )}
               </div>
             </div>
@@ -648,13 +591,11 @@ export default function VehicleAdminPage() {
         </div>
       </section>
 
-      {showForm && selectedVehicle && (
-        <BlogPostForm
-          onClose={handleCloseForm}
-          vehicleSlug={selectedVehicle.slug}
-          editingPost={editingPost}
-        />
-      )}
+      <AnimatePresence>
+        {showPostForm && selectedVehicle && (
+          <BlogPostForm onClose={handleClosePostForm} vehicleSlug={selectedVehicle.slug} editingPost={editingPost}/>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
