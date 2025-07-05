@@ -197,3 +197,76 @@ enum ThumbnailDisplay {
   HERO
   INGREDIENTS
 }
+
+//-------------------------------------------------
+// PROJECT MODELS
+//-------------------------------------------------
+
+model Project {
+  id               String               @id @default(cuid())
+  slug             String               @unique
+  title            String
+  description      String
+  longDescription  String?
+  category         String
+  status           String               @default("in-progress")
+  featured         Boolean              @default(false)
+  published        Boolean              @default(false)
+  heroImage        String?
+  heroImageAlt     String?
+  demoUrl          String?
+  githubUrl        String?
+  videoUrl         String?
+  order            Int                  @default(0)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  publishedAt      DateTime?
+  technologies     ProjectTechnology[]
+  features         ProjectFeature[]
+  images           ProjectImage[]
+  updates          ProjectUpdate[]
+
+  @@index([slug])
+  @@index([featured])
+  @@index([category])
+}
+
+model ProjectTechnology {
+  id        String  @id @default(cuid())
+  name      String
+  icon      String?
+  category  String?
+  order     Int     @default(0)
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+}
+
+model ProjectFeature {
+  id          String  @id @default(cuid())
+  title       String
+  description String
+  order       Int     @default(0)
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+}
+
+model ProjectImage {
+  id        String  @id @default(cuid())
+  url       String
+  alt       String
+  caption   String?
+  order     Int     @default(0)
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+}
+
+model ProjectUpdate {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+}
