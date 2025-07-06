@@ -65,6 +65,19 @@ export async function GET(request: NextRequest) {
       },
       take: 5
     });
+
+    const vehiclePostViews = await prisma.contentView.groupBy({
+      by: ['slug'],
+      where: {
+        contentType: 'vehicle-post',
+        createdAt: { gte: startDate }
+      },
+      _count: true,
+      orderBy: {
+        _count: { slug: 'desc' }
+      },
+      take: 5
+    });
     
     // Get total stats
     const totalPageViews = await prisma.pageView.count({
@@ -83,6 +96,7 @@ export async function GET(request: NextRequest) {
       topPages: pageViews,
       topRecipes: recipeViews,
       topProjects: projectViews,
+      topVehiclePosts: vehiclePostViews,
     });
   } catch (error) {
     console.error('Error fetching analytics:', error);

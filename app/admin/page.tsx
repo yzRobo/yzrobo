@@ -239,7 +239,7 @@ export default function AdminDashboard() {
                   <QuickAction
                     icon={<FaChartBar />}
                     label="Analytics"
-                    href="#"
+                    href="/admin/analytics"  // Changed from "#" to "/admin/analytics"
                   />
                 </div>
               </motion.div>
