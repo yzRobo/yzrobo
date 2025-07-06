@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,39 +7,35 @@ datasource db {
   url      = env("POSTGRES_URL")
 }
 
-//-------------------------------------------------
-// RECIPE MODELS
-//-------------------------------------------------
-
 model Recipe {
-  id                  String             @id @default(cuid())
-  slug                String             @unique
+  id                  String           @id @default(cuid())
+  slug                String           @unique
   title               String
   description         String
-  story               String?
   cuisine             String?
   prepTime            String
   cookTime            String
   totalTime           String
   servings            Int
   difficulty          Difficulty
-  featured            Boolean            @default(false)
-  published           Boolean            @default(false)
+  featured            Boolean          @default(false)
+  published           Boolean          @default(false)
   heroImage           String?
   heroImageAlt        String?
+  authorId            String?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  publishedAt         DateTime?
   ingredientsImage    String?
   ingredientsImageAlt String?
-  thumbnailDisplay    ThumbnailDisplay?  @default(HERO)
-  authorId            String?
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
-  publishedAt         DateTime?
+  thumbnailDisplay    ThumbnailDisplay @default(HERO)
+  story               String?
   ingredients         Ingredient[]
   instructions        Instruction[]
-  tips                Tip[]
   nutrition           Nutrition?
-  tags                Tag[]              @relation("RecipeToTag")
   reviews             Review[]
+  tips                Tip[]
+  tags                Tag[]            @relation("RecipeToTag")
 
   @@index([slug])
   @@index([featured])
@@ -56,8 +49,8 @@ model Ingredient {
   notes    String?
   group    String?
   order    Int
-  recipe   Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId String
+  recipe   Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 }
 
 model Instruction {
@@ -68,18 +61,18 @@ model Instruction {
   image       String?
   imageAlt    String?
   time        String?
-  recipe      Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId    String
+  recipe      Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
   @@index([recipeId, step])
 }
 
 model Tip {
-  id      String @id @default(cuid())
-  content String
-  order   Int
-  recipe  Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  id       String @id @default(cuid())
+  content  String
+  order    Int
   recipeId String
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 }
 
 model Nutrition {
@@ -91,8 +84,8 @@ model Nutrition {
   fiber    String?
   sugar    String?
   sodium   String?
-  recipe   Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId String  @unique
+  recipe   Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 }
 
 model Tag {
@@ -106,16 +99,12 @@ model Review {
   id        String   @id @default(cuid())
   rating    Int
   comment   String?
-  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId  String
   createdAt DateTime @default(now())
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
   @@index([recipeId])
 }
-
-//-------------------------------------------------
-// VEHICLE MODELS
-//-------------------------------------------------
 
 model Vehicle {
   id            String            @id @default(cuid())
@@ -130,6 +119,7 @@ model Vehicle {
   modifications Modification[]
   specs         Spec[]
   blogPosts     VehicleBlogPost[]
+  VehicleUpdate VehicleUpdate[]
 }
 
 model Modification {
@@ -137,8 +127,8 @@ model Modification {
   category  String
   items     String[]
   order     Int      @default(0)
-  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   vehicleId String
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 }
 
 model Spec {
@@ -146,13 +136,9 @@ model Spec {
   label     String
   value     String
   order     Int     @default(0)
-  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   vehicleId String
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 }
-
-//-------------------------------------------------
-// NEW VEHICLE BLOG MODELS
-//-------------------------------------------------
 
 model VehicleBlogPost {
   id           String       @id @default(cuid())
@@ -167,8 +153,8 @@ model VehicleBlogPost {
   publishedAt  DateTime?
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
-  vehicle      Vehicle      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   vehicleId    String
+  vehicle      Vehicle      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   tags         VehicleTag[] @relation("VehicleBlogPostToTag")
 
   @@unique([vehicleId, slug])
@@ -183,48 +169,29 @@ model VehicleTag {
   posts VehicleBlogPost[] @relation("VehicleBlogPostToTag")
 }
 
-//-------------------------------------------------
-// ENUMS
-//-------------------------------------------------
-
-enum Difficulty {
-  easy
-  medium
-  hard
-}
-
-enum ThumbnailDisplay {
-  HERO
-  INGREDIENTS
-}
-
-//-------------------------------------------------
-// PROJECT MODELS
-//-------------------------------------------------
-
 model Project {
-  id               String               @id @default(cuid())
-  slug             String               @unique
-  title            String
-  description      String
-  longDescription  String?
-  category         String
-  status           String               @default("in-progress")
-  featured         Boolean              @default(false)
-  published        Boolean              @default(false)
-  heroImage        String?
-  heroImageAlt     String?
-  demoUrl          String?
-  githubUrl        String?
-  videoUrl         String?
-  order            Int                  @default(0)
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
-  publishedAt      DateTime?
-  technologies     ProjectTechnology[]
-  features         ProjectFeature[]
-  images           ProjectImage[]
-  updates          ProjectUpdate[]
+  id              String              @id @default(cuid())
+  slug            String              @unique
+  title           String
+  description     String
+  longDescription String?
+  category        String
+  status          String              @default("in-progress")
+  featured        Boolean             @default(false)
+  published       Boolean             @default(false)
+  heroImage       String?
+  heroImageAlt    String?
+  demoUrl         String?
+  githubUrl       String?
+  videoUrl        String?
+  order           Int                 @default(0)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  publishedAt     DateTime?
+  features        ProjectFeature[]
+  images          ProjectImage[]
+  technologies    ProjectTechnology[]
+  updates         ProjectUpdate[]
 
   @@index([slug])
   @@index([featured])
@@ -237,8 +204,8 @@ model ProjectTechnology {
   icon      String?
   category  String?
   order     Int     @default(0)
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model ProjectFeature {
@@ -246,8 +213,8 @@ model ProjectFeature {
   title       String
   description String
   order       Int     @default(0)
-  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId   String
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model ProjectImage {
@@ -256,8 +223,8 @@ model ProjectImage {
   alt       String
   caption   String?
   order     Int     @default(0)
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model ProjectUpdate {
@@ -267,6 +234,53 @@ model ProjectUpdate {
   published Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model PageView {
+  id        String   @id @default(cuid())
+  path      String
+  referrer  String?
+  userAgent String?
+  ip        String?
+  country   String?
+  city      String?
+  createdAt DateTime @default(now())
+
+  @@index([path, createdAt])
+}
+
+model ContentView {
+  id          String   @id @default(cuid())
+  contentType String
+  contentId   String
+  slug        String
+  referrer    String?
+  createdAt   DateTime @default(now())
+
+  @@index([contentType, contentId])
+  @@index([slug, createdAt])
+}
+
+model VehicleUpdate {
+  id        String   @id
+  title     String
+  content   String
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  vehicleId String
+  Vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+}
+
+enum Difficulty {
+  easy
+  medium
+  hard
+}
+
+enum ThumbnailDisplay {
+  HERO
+  INGREDIENTS
 }

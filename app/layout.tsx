@@ -5,6 +5,7 @@ import { Analytics } from '@vercel/analytics/react';
 import Image from 'next/image'; 
 import Footer from "./components/Footer";
 import GlobalEffects from "./components/GlobalEffects";
+import AnalyticsProvider from "./components/AnalyticsProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -75,45 +76,47 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${syne.variable}`}>
       <body className="min-h-screen antialiased flex flex-col">
-        <GlobalEffects />
-        {/* Loading screen */}
-        <div id="loading-screen" className="fixed inset-0 z-[100] bg-black flex items-center justify-center transition-opacity duration-500">
-          <div className="animate-pulse">
-            <Image
-              src="/media/yzRobo_Logo_Main.png"
-              alt="yzRobo Logo"
-              width={240}
-              height={70}
-              priority
-            />
+        <AnalyticsProvider>
+          <GlobalEffects />
+          {/* Loading screen */}
+          <div id="loading-screen" className="fixed inset-0 z-[100] bg-black flex items-center justify-center transition-opacity duration-500">
+            <div className="animate-pulse">
+              <Image
+                src="/media/yzRobo_Logo_Main.png"
+                alt="yzRobo Logo"
+                width={240}
+                height={70}
+                priority
+              />
+            </div>
           </div>
-        </div>
-        
-        <main className="flex-grow">
-          {children}
-        </main>
-        
-        <Footer />
+          
+          <main className="flex-grow">
+            {children}
+          </main>
+          
+          <Footer />
 
-        {/* Remove loading screen after mount */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.addEventListener('load', function() {
-                setTimeout(function() {
-                  const loader = document.getElementById('loading-screen');
-                  if (loader) {
-                    loader.style.opacity = '0';
-                    setTimeout(function() {
-                      loader.style.display = 'none';
-                    }, 500);
-                  }
-                }, 100);
-              });
-            `,
-          }}
-        />
-        <Analytics />
+          {/* Remove loading screen after mount */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                window.addEventListener('load', function() {
+                  setTimeout(function() {
+                    const loader = document.getElementById('loading-screen');
+                    if (loader) {
+                      loader.style.opacity = '0';
+                      setTimeout(function() {
+                        loader.style.display = 'none';
+                      }, 500);
+                    }
+                  }, 100);
+                });
+              `,
+            }}
+          />
+          <Analytics />
+        </AnalyticsProvider>
       </body>
     </html>
   );

@@ -15,9 +15,17 @@ import {
 } from 'react-icons/fa';
 import Navigation from '../components/Navigation';
 import Link from 'next/link';
+import AnalyticsDashboard from '../components/AnalyticsDashboard';
 
 // Stats Card Component
-const StatsCard = ({ icon, title, value, subtitle, href }: any) => (
+interface StatsCardProps {
+  icon: React.ReactNode;
+  title: string;
+  value: number | string;
+  subtitle: string;
+  href: string;
+}
+const StatsCard = ({ icon, title, value, subtitle, href }: StatsCardProps) => (
   <Link href={href}>
     <motion.div
       whileHover={{ scale: 1.02, y: -2 }}
@@ -37,7 +45,12 @@ const StatsCard = ({ icon, title, value, subtitle, href }: any) => (
 );
 
 // Quick Action Component
-const QuickAction = ({ icon, label, href }: any) => (
+interface QuickActionProps {
+  icon: React.ReactNode;
+  label: string;
+  href: string;
+}
+const QuickAction = ({ icon, label, href }: QuickActionProps) => (
   <Link href={href}>
     <motion.div
       whileHover={{ scale: 1.05 }}
@@ -284,6 +297,16 @@ export default function AdminDashboard() {
                     </div>
                   </Link>
                 </div>
+              </motion.div>
+
+              {/* Analytics Dashboard */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="mt-12"
+              >
+                <AnalyticsDashboard />
               </motion.div>
             </>
           )}

@@ -17,6 +17,17 @@
   /* Typography */
   --font-sans: var(--font-inter);
   --font-display: var(--font-syne);
+  
+  /* Spacing & Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  
+  /* Transitions */
+  --transition-fast: 150ms;
+  --transition-base: 300ms;
+  --transition-slow: 500ms;
 }
 
 * {

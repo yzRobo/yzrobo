@@ -23,6 +23,7 @@ import { PageLoadingSpinner } from '../../components/LoadingStates';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import { formatCookingTime } from '@/lib/utils/timeFormatting';
 import ReactMarkdown from 'react-markdown';
+import { useContentTracking } from '../../hooks/useAnalytics';
 
 // Ingredient Item Component with divider
 const IngredientItem = ({ ingredient, index, isLast }: { ingredient: any; index: number; isLast: boolean }) => (
@@ -130,6 +131,9 @@ function RecipeDetailContent() {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Add analytics tracking
+  useContentTracking('recipe', recipe?.id || '', recipe?.slug || '');
 
   useEffect(() => {
     if (params.slug) {

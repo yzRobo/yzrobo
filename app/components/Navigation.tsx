@@ -34,7 +34,7 @@ const MobileMenu = ({ isOpen, closeMenu }: { isOpen: boolean, closeMenu: () => v
             <NavLink href="/auto">Auto</NavLink>
             <NavLink href="/cooking">Cooking</NavLink>
             <NavLink href="/coding">Coding Projects</NavLink>
-            <NavLink href="/links">Lets Connect</NavLink>
+            <NavLink href="/links">Let's Connect</NavLink>
           </nav>
         </motion.div>
       </motion.div>
@@ -99,7 +99,7 @@ const Navigation = () => {
             <motion.a href="/gaming" className="text-gray-400 hover:text-white transition-colors duration-300 text-sm tracking-wide" whileHover={{ y: -2 }}>Gaming</motion.a>
             <motion.a href="/auto" className="text-gray-400 hover:text-white transition-colors duration-300 text-sm tracking-wide" whileHover={{ y: -2 }}>Automotive</motion.a>
             <motion.a href="/cooking" className="text-gray-400 hover:text-white transition-colors duration-300 text-sm tracking-wide" whileHover={{ y: -2 }}>Cooking</motion.a>
-            <motion.a href="/projects" className="text-gray-400 hover:text-white transition-colors duration-300 text-sm tracking-wide" whileHover={{ y: -2 }}>Coding Projects</motion.a>
+            <motion.a href="/coding" className="text-gray-400 hover:text-white transition-colors duration-300 text-sm tracking-wide" whileHover={{ y: -2 }}>Coding Projects</motion.a>
             <motion.a
               href="/links"
               className="relative group"
@@ -107,7 +107,7 @@ const Navigation = () => {
               whileTap={{ scale: 0.95 }}
             >
               <div className="relative px-6 py-2 bg-black/20 backdrop-blur-sm rounded-full border border-white/20 text-white text-sm group-hover:border-white/50 transition-colors">
-                Lets Connect
+                Let's Connect
               </div>
             </motion.a>
           </div>

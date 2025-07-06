@@ -8,7 +8,13 @@ import Navigation from '../../components/Navigation';
 import type { Vehicle, VehicleBlogPost, VehicleTag, Spec, Modification } from '@/types/vehicle';
 
 // --- Reusable Form Input Component ---
-const FormInput = ({ label, value, onChange, ...props }: any) => (
+interface FormInputProps {
+  label: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  [key: string]: any; // for other props
+}
+const FormInput = ({ label, value, onChange, ...props }: FormInputProps) => (
   <div>
     <label className="block text-sm font-medium mb-2">{label}</label>
     <input
