@@ -86,7 +86,9 @@ const ImageGallery = ({ images }: { images: any[] }) => {
           />
           {images[currentIndex].caption && (
             <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-              <p className="text-sm text-white">{images[currentIndex].caption}</p>
+              <div className="text-sm text-white">
+                <ReactMarkdown>{images[currentIndex].caption}</ReactMarkdown>
+              </div>
             </div>
           )}
         </motion.div>
@@ -273,14 +275,14 @@ export default function ProjectDetailPage() {
               <StatusBadge status={project.status} />
             </motion.div>
             
-            <motion.p
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-xl text-gray-300 mb-6"
+              className="text-xl text-gray-300 mb-6 prose prose-invert max-w-none"
             >
-              {project.description}
-            </motion.p>
+              <ReactMarkdown>{project.description}</ReactMarkdown>
+            </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -369,6 +371,18 @@ export default function ProjectDetailPage() {
                   </h2>
                   <ReactMarkdown
                     components={{
+                      h1: ({ children }) => <h1 className="text-4xl font-bold mt-8 mb-4">{children}</h1>,
+                      h2: ({ children }) => <h2 className="text-3xl font-bold mt-6 mb-3">{children}</h2>,
+                      h3: ({ children }) => <h3 className="text-2xl font-bold mt-4 mb-2">{children}</h3>,
+                      p: ({ children }) => <p className="mb-4 leading-relaxed">{children}</p>,
+                      ul: ({ children }) => <ul className="mb-4 space-y-2 list-disc list-inside">{children}</ul>,
+                      ol: ({ children }) => <ol className="mb-4 space-y-2 list-decimal list-inside">{children}</ol>,
+                      li: ({ children }) => <li className="ml-4">{children}</li>,
+                      blockquote: ({ children }) => (
+                        <blockquote className="border-l-4 border-[var(--accent-primary)] pl-4 my-4 italic text-gray-300">
+                          {children}
+                        </blockquote>
+                      ),
                       code: ({ className, children, ...props }) => {
                         const match = /language-(\w+)/.exec(className || '');
                         return match ? (
@@ -378,7 +392,14 @@ export default function ProjectDetailPage() {
                             {children}
                           </code>
                         );
-                      }
+                      },
+                      a: ({ children, href }) => (
+                        <a href={href} target="_blank" rel="noopener noreferrer" className="text-[var(--accent-primary)] hover:underline">
+                          {children}
+                        </a>
+                      ),
+                      strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
+                      em: ({ children }) => <em className="italic">{children}</em>,
                     }}
                   >
                     {project.longDescription}
@@ -407,7 +428,9 @@ export default function ProjectDetailPage() {
                         className="p-4 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10"
                       >
                         <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
-                        <p className="text-gray-300">{feature.description}</p>
+                        <div className="text-gray-300 prose prose-invert prose-sm max-w-none">
+                          <ReactMarkdown>{feature.description}</ReactMarkdown>
+                        </div>
                       </motion.div>
                     ))}
                   </div>
@@ -456,7 +479,36 @@ export default function ProjectDetailPage() {
                         </div>
                         <h3 className="text-xl font-semibold mb-3">{update.title}</h3>
                         <div className="prose prose-invert prose-sm max-w-none">
-                          <ReactMarkdown>{update.content}</ReactMarkdown>
+                          <ReactMarkdown
+                            components={{
+                              h1: ({ children }) => <h1 className="text-2xl font-bold mt-4 mb-2">{children}</h1>,
+                              h2: ({ children }) => <h2 className="text-xl font-bold mt-3 mb-2">{children}</h2>,
+                              h3: ({ children }) => <h3 className="text-lg font-bold mt-2 mb-1">{children}</h3>,
+                              p: ({ children }) => <p className="mb-3">{children}</p>,
+                              ul: ({ children }) => <ul className="mb-3 space-y-1 list-disc list-inside">{children}</ul>,
+                              ol: ({ children }) => <ol className="mb-3 space-y-1 list-decimal list-inside">{children}</ol>,
+                              li: ({ children }) => <li className="ml-4">{children}</li>,
+                              code: ({ className, children, ...props }) => {
+                                const match = /language-(\w+)/.exec(className || '');
+                                return !match ? (
+                                  <code {...props} className="px-1 py-0.5 bg-white/10 rounded text-sm">
+                                    {children}
+                                  </code>
+                                ) : (
+                                  <CodeBlock language={match[1]} value={String(children).replace(/\n$/, '')} />
+                                );
+                              },
+                              a: ({ children, href }) => (
+                                <a href={href} target="_blank" rel="noopener noreferrer" className="text-[var(--accent-primary)] hover:underline">
+                                  {children}
+                                </a>
+                              ),
+                              strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+                              em: ({ children }) => <em className="italic">{children}</em>,
+                            }}
+                          >
+                            {update.content}
+                          </ReactMarkdown>
                         </div>
                       </motion.div>
                     ))}
