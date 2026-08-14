@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaTwitch, FaYoutube, FaDiscord, FaImage } from 'react-icons/fa';
+import { FaTwitch, FaYoutube, FaImage } from 'react-icons/fa';
 import Navigation from '../components/Navigation';
 
 // A placeholder component for images
@@ -78,7 +78,7 @@ export default function GamingPage() {
       {/* Featured Content Section */}
       <section className="py-16 md:py-20">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <Feature
               icon={<FaTwitch />}
               title="Live on Twitch"
@@ -92,13 +92,6 @@ export default function GamingPage() {
               description="Find stream highlights, curated gameplay videos, and in-depth tutorials on my YouTube channels."
               link="https://youtube.com/@yzRoboGaming"
               linkText="Subscribe"
-            />
-            <Feature
-              icon={<FaDiscord />}
-              title="Join the Community"
-              description="Connect with other members of the community, get stream notifications, and chat directly in our official Discord server."
-              link="https://discord.gg/thepadcast"
-              linkText="Join Discord"
             />
           </div>
         </div>
