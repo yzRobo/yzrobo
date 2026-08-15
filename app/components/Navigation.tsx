@@ -34,7 +34,7 @@ const MobileMenu = ({ isOpen, closeMenu }: { isOpen: boolean, closeMenu: () => v
             <NavLink href="/auto">Auto</NavLink>
             <NavLink href="/cooking">Cooking</NavLink>
             <NavLink href="/coding">Coding Projects</NavLink>
-            <NavLink href="/links">Let's Connect</NavLink>
+            <NavLink href="/links">Let&apos;s Connect</NavLink>
           </nav>
         </motion.div>
       </motion.div>
@@ -107,7 +107,7 @@ const Navigation = () => {
               whileTap={{ scale: 0.95 }}
             >
               <div className="relative px-6 py-2 bg-black/20 backdrop-blur-sm rounded-full border border-white/20 text-white text-sm group-hover:border-white/50 transition-colors">
-                Let's Connect
+                Let&apos;s Connect
               </div>
             </motion.a>
           </div>

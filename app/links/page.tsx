@@ -204,7 +204,7 @@ export default function LinksPage() {
             className="text-center max-w-2xl mx-auto"
           >
             <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-4 md:mb-6 tracking-tight text-white">
-              Let's Connect
+              Let&apos;s Connect
             </h1>
             <p className="text-lg sm:text-xl text-gray-400 mb-8 md:mb-12 max-w-lg mx-auto">
               Find me across the web. Gaming streams, automotive content, and everything in between.
@@ -250,7 +250,7 @@ export default function LinksPage() {
             viewport={{ once: true }}
           >
             <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">
-              Don't see what you're looking for?
+              Don&apos;t see what you&apos;re looking for?
             </h2>
             <p className="text-gray-400 max-w-md mx-auto text-sm sm:text-base">
               Drop me a message on any platform above and I&apos;ll get back to you.

@@ -73,7 +73,7 @@ const FeaturedPostCard = ({ post }: { post: VehicleBlogPost }) => {
 const vehicles = [
   { slug: '2006-yamaha-r6', name: '2006 Yamaha R6 50th Anniversary', category: 'Motorcycle', description: "Yamaha's iconic track weapon. The bike I've owned the longest.", icon: '/media/icons/sportbike.svg' },
   { slug: '2014-yamaha-mt09', name: '2014 Yamaha MT-09', category: 'Motorcycle', description: 'The original master of torque. Raw, aggressive, and incredibly fun.', icon: '/media/icons/sportbike.svg' },
-  { slug: '2018-yamaha-mt07', name: '2018 Yamaha MT-07', category: 'Motorcycle', description: <>The hyper-naked that balances performance and "<em>streetability</em>" perfectly.</>, icon: '/media/icons/sportbike.svg' },
+  { slug: '2018-yamaha-mt07', name: '2018 Yamaha MT-07', category: 'Motorcycle', description: <>The hyper-naked that balances performance and &quot;<em>streetability</em>&quot; perfectly.</>, icon: '/media/icons/sportbike.svg' },
   { slug: '2000-yamaha-yz250', name: '2000 Yamaha YZ250', category: 'Motorcycle', description: 'A classic two-stroke motocross bike. Pure, unfiltered off-road power. And it smells so good.', icon: '/media/icons/dirtbike.svg' },
   { slug: '1992-ford-f150', name: '1992 Ford F-150 XLT', category: 'OBS Truck', description: 'Super Cab with the 5.8L V8. A classic OBS Ford in the making.', icon: <FaTruckPickup /> },
 ];

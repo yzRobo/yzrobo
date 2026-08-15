@@ -60,7 +60,7 @@ export const DefaultErrorFallback = ({ error, reset }: { error: Error | null; re
         <FaExclamationTriangle className="text-6xl text-[var(--accent-primary)] mx-auto mb-4" />
         <h1 className="text-3xl font-bold mb-2">Oops! Something went wrong</h1>
         <p className="text-gray-400">
-          We're sorry, but something unexpected happened. Please try again.
+          We&apos;re sorry, but something unexpected happened. Please try again.
         </p>
       </div>
 

@@ -270,7 +270,7 @@ export default function AnalyticsPage() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
               <h1 className="text-4xl font-bold mb-2">Analytics Dashboard</h1>
-              <p className="text-gray-400">Track your site's performance and content engagement</p>
+              <p className="text-gray-400">Track your site&apos;s performance and content engagement</p>
             </div>
             <div className="flex items-center gap-4">
               <Link href="/admin">

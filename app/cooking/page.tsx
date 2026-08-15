@@ -263,7 +263,7 @@ function CookingPageContent() {
             </h2>
             <p className="text-gray-400 mb-8 max-w-2xl mx-auto">
               Join me on stream for live cooking sessions, recipe development, and culinary experiments. 
-              Sometimes we nail it, sometimes we learn - but it's always fun.
+              Sometimes we nail it, sometimes we learn - but it&apos;s always fun.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <motion.a
