@@ -1,5 +1,22 @@
 // /types/recipe.ts
 
+// Shapes accepted from request bodies when creating/updating a recipe.
+// Ordering fields (order, step) are assigned server-side from array index,
+// so they are deliberately absent here.
+export interface IngredientInput {
+  amount: string;
+  unit?: string | null;
+  item: string;
+  notes?: string | null;
+  group?: string | null;
+}
+
+export interface InstructionInput {
+  title?: string | null;
+  description: string;
+  time?: string | null;
+}
+
 export interface Tip {
   id: string;
   content: string;

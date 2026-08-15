@@ -1,7 +1,9 @@
 // app/api/projects/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { put } from '@vercel/blob';
+import type { ProjectTechnologyInput, ProjectFeatureInput } from '@/types/project';
 
 // GET /api/projects - Fetch all projects
 export async function GET(request: NextRequest) {
@@ -12,7 +14,7 @@ export async function GET(request: NextRequest) {
     const published = searchParams.get('published');
     const all = searchParams.get('all');
     
-    const where: any = {};
+    const where: Prisma.ProjectWhereInput = {};
     
     if (category && category !== 'all') {
       where.category = category;
@@ -112,7 +114,7 @@ export async function POST(request: NextRequest) {
         videoUrl,
         publishedAt: published ? new Date() : null,
         technologies: technologies ? {
-          create: technologies.map((tech: any, index: number) => ({
+          create: technologies.map((tech: ProjectTechnologyInput, index: number) => ({
             name: tech.name,
             icon: tech.icon,
             category: tech.category,
@@ -120,7 +122,7 @@ export async function POST(request: NextRequest) {
           })),
         } : undefined,
         features: features ? {
-          create: features.map((feature: any, index: number) => ({
+          create: features.map((feature: ProjectFeatureInput, index: number) => ({
             title: feature.title,
             description: feature.description,
             order: index,

@@ -1,5 +1,6 @@
 // app/api/vehicles/[vehicleSlug]/posts/[postSlug]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { put } from '@vercel/blob';
 
@@ -69,7 +70,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
     
-    const dataToUpdate: any = {
+    const dataToUpdate: Prisma.VehicleBlogPostUpdateInput = {
       title: body.title,
       excerpt: body.excerpt,
       content: body.content,

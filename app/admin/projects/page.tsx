@@ -57,7 +57,7 @@ const ProjectForm = ({ onClose, editingProject }: { onClose: () => void; editing
     e.preventDefault();
     setSaving(true);
     try {
-      const payload: any = {
+      const payload = {
         ...formData,
         heroImage: heroImagePreview,
         technologies: formData.technologies.filter(t => t.name),
@@ -191,7 +191,7 @@ const ProjectForm = ({ onClose, editingProject }: { onClose: () => void; editing
           {/* Technologies */}
           <div>
             <label className="block text-sm font-medium mb-2">Technologies</label>
-            {formData.technologies.map((tech: any, index: number) => (
+            {formData.technologies.map((tech, index) => (
               <div key={index} className="flex gap-2 mb-2 items-center">
                 <input type="text" placeholder="Technology name" value={tech.name} onChange={(e) => { const newTech = [...formData.technologies]; newTech[index].name = e.target.value; setFormData({ ...formData, technologies: newTech }); }} className="flex-1 px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" />
                 <button type="button" onClick={() => removeTechnology(index)} className="p-2 text-red-500 hover:text-red-400 transition-colors rounded-full"><FaTrash /></button>
@@ -203,7 +203,7 @@ const ProjectForm = ({ onClose, editingProject }: { onClose: () => void; editing
           {/* Features */}
           <div>
             <label className="block text-sm font-medium mb-2">Key Features</label>
-            {formData.features.map((feature: any, index: number) => (
+            {formData.features.map((feature, index) => (
               <div key={index} className="mb-3 p-4 bg-black/30 rounded-lg">
                 <input type="text" placeholder="Feature title" value={feature.title} onChange={(e) => { const newFeatures = [...formData.features]; newFeatures[index].title = e.target.value; setFormData({ ...formData, features: newFeatures }); }} className="w-full mb-2 px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" />
                 <textarea placeholder="Feature description" value={feature.description} onChange={(e) => { const newFeatures = [...formData.features]; newFeatures[index].description = e.target.value; setFormData({ ...formData, features: newFeatures }); }} rows={2} className="w-full px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" />

@@ -1,7 +1,9 @@
 // app/api/recipes/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { put } from '@vercel/blob';
+import type { IngredientInput, InstructionInput } from '@/types/recipe';
 
 // GET /api/recipes - Fetch all recipes or filtered by tag
 export async function GET(request: NextRequest) {
@@ -12,7 +14,7 @@ export async function GET(request: NextRequest) {
     const published = searchParams.get('published');
     const all = searchParams.get('all');
     
-    const where: any = {};
+    const where: Prisma.RecipeWhereInput = {};
     
     if (tagSlug && tagSlug !== 'all') {
       where.tags = {
@@ -43,9 +45,9 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
     
-    const recipesWithRating = recipes.map((recipe: any) => {
+    const recipesWithRating = recipes.map((recipe) => {
       const avgRating = recipe.reviews.length > 0
-        ? recipe.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / recipe.reviews.length
+        ? recipe.reviews.reduce((sum, r) => sum + r.rating, 0) / recipe.reviews.length
         : 0;
       
       return {
@@ -145,7 +147,7 @@ export async function POST(request: NextRequest) {
         ingredientsImageAlt: `Ingredients for ${title}`,
         publishedAt: published ? new Date() : null,
         ingredients: {
-          create: ingredients.map((ing: any, index: number) => ({
+          create: ingredients.map((ing: IngredientInput, index: number) => ({
             amount: ing.amount,
             unit: ing.unit,
             item: ing.item,
@@ -155,7 +157,7 @@ export async function POST(request: NextRequest) {
           })),
         },
         instructions: {
-          create: instructions.map((inst: any, index: number) => ({
+          create: instructions.map((inst: InstructionInput, index: number) => ({
             step: index + 1,
             title: inst.title,
             description: inst.description,

@@ -8,11 +8,10 @@ import Navigation from '../../components/Navigation';
 import type { Vehicle, VehicleBlogPost, VehicleTag, Spec, Modification } from '@/types/vehicle';
 
 // --- Reusable Form Input Component ---
-interface FormInputProps {
+interface FormInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> {
   label: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  [key: string]: any; // for other props
 }
 const FormInput = ({ label, value, onChange, ...props }: FormInputProps) => (
   <div>
@@ -27,7 +26,12 @@ const FormInput = ({ label, value, onChange, ...props }: FormInputProps) => (
 );
 
 // --- Reusable Textarea Component ---
-const FormTextarea = ({ label, value, onChange, ...props }: any) => (
+interface FormTextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'value' | 'onChange'> {
+  label: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+}
+const FormTextarea = ({ label, value, onChange, ...props }: FormTextareaProps) => (
   <div>
     <label className="block text-sm font-medium mb-2">{label}</label>
     <textarea
@@ -128,9 +132,9 @@ const VehicleOverviewForm = ({
         onSubmit={handleSubmit} 
         className="space-y-8"
     >
-        <FormInput label="Vehicle Name" value={formData.name} onChange={(e: any) => setFormData(p => ({...p, name: e.target.value}))} />
-        <FormInput label="Category" value={formData.category} onChange={(e: any) => setFormData(p => ({...p, category: e.target.value}))} />
-        <FormTextarea label="Story (one paragraph per line)" value={(formData.story || []).join('\n')} onChange={(e: any) => setFormData(p => ({...p, story: e.target.value.split('\n')}))} rows={5} />
+        <FormInput label="Vehicle Name" value={formData.name} onChange={(e) => setFormData(p => ({...p, name: e.target.value}))} />
+        <FormInput label="Category" value={formData.category} onChange={(e) => setFormData(p => ({...p, category: e.target.value}))} />
+        <FormTextarea label="Story (one paragraph per line)" value={(formData.story || []).join('\n')} onChange={(e) => setFormData(p => ({...p, story: e.target.value.split('\n')}))} rows={5} />
         
         <div>
             <label className="block text-sm font-medium mb-2">Hero Image</label>
@@ -158,8 +162,8 @@ const VehicleOverviewForm = ({
             <h3 className="text-lg font-semibold">Specifications</h3>
             {(formData.specs || []).map((spec, i) => (
                 <div key={spec.id} className="flex gap-2 items-end">
-                    <div className="flex-1"><FormInput label="Label" value={spec.label} onChange={(e: any) => handleSpecChange(i, 'label', e.target.value)} /></div>
-                    <div className="flex-1"><FormInput label="Value" value={spec.value} onChange={(e: any) => handleSpecChange(i, 'value', e.target.value)} /></div>
+                    <div className="flex-1"><FormInput label="Label" value={spec.label} onChange={(e) => handleSpecChange(i, 'label', e.target.value)} /></div>
+                    <div className="flex-1"><FormInput label="Value" value={spec.value} onChange={(e) => handleSpecChange(i, 'value', e.target.value)} /></div>
                     <button type="button" onClick={() => removeSpec(i)} className="p-3 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600/40"><FaTrash /></button>
                 </div>
             ))}
@@ -171,8 +175,8 @@ const VehicleOverviewForm = ({
             {(formData.modifications || []).map((mod, i) => (
                 <div key={mod.id} className="flex gap-2 items-start p-4 bg-black/30 rounded-lg">
                     <div className="flex-1 space-y-2">
-                       <FormInput label="Mod Category" value={mod.category} onChange={(e: any) => handleModChange(i, 'category', e.target.value)} />
-                       <FormTextarea label="Items (one per line)" value={Array.isArray(mod.items) ? mod.items.join('\n') : ''} onChange={(e: any) => handleModChange(i, 'items', e.target.value.split('\n'))} rows={4} />
+                       <FormInput label="Mod Category" value={mod.category} onChange={(e) => handleModChange(i, 'category', e.target.value)} />
+                       <FormTextarea label="Items (one per line)" value={Array.isArray(mod.items) ? mod.items.join('\n') : ''} onChange={(e) => handleModChange(i, 'items', e.target.value.split('\n'))} rows={4} />
                     </div>
                     <button type="button" onClick={() => removeMod(i)} className="p-3 mt-8 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600/40"><FaTrash /></button>
                 </div>
@@ -337,9 +341,9 @@ const BlogPostForm = ({
             </div>
           </div>
 
-          <FormInput label="Title" required value={formData.title} onChange={(e: any) => setFormData({ ...formData, title: e.target.value })} />
-          <FormTextarea label="Excerpt (Optional)" value={formData.excerpt} onChange={(e: any) => setFormData({ ...formData, excerpt: e.target.value })} rows={2} placeholder="A short summary that appears in blog listings" />
-          <FormTextarea label="Content (Markdown supported)" required value={formData.content} onChange={(e: any) => setFormData({ ...formData, content: e.target.value })} rows={10} />
+          <FormInput label="Title" required value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
+          <FormTextarea label="Excerpt (Optional)" value={formData.excerpt} onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })} rows={2} placeholder="A short summary that appears in blog listings" />
+          <FormTextarea label="Content (Markdown supported)" required value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} rows={10} />
 
           <div>
             <label className="block text-sm font-medium mb-2">Tags</label>

@@ -1,8 +1,10 @@
 // app/api/recipes/[slug]/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { put } from '@vercel/blob';
+import type { IngredientInput, InstructionInput } from '@/types/recipe';
 
 // GET /api/recipes/[slug] - Get a single recipe
 export async function GET(
@@ -31,7 +33,7 @@ export async function GET(
     }
     
     const avgRating = recipe.reviews.length > 0
-      ? recipe.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / recipe.reviews.length
+      ? recipe.reviews.reduce((sum, r) => sum + r.rating, 0) / recipe.reviews.length
       : 0;
     
     const recipeWithRating = {
@@ -65,7 +67,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Recipe not found' }, { status: 404 });
     }
 
-    const dataToUpdate: any = {};
+    const dataToUpdate: Prisma.RecipeUpdateInput = {};
 
     if (body.heroImage && body.heroImage.startsWith('data:')) {
       const base64Data = body.heroImage.split(',')[1];
@@ -91,7 +93,7 @@ export async function PUT(
       dataToUpdate.ingredientsImageAlt = null;
     }
     
-    let nutritionUpdate: any = undefined;
+    let nutritionUpdate: Prisma.RecipeUpdateInput['nutrition'] = undefined;
     
     if (body.nutrition === null && existingRecipe.nutrition) {
       nutritionUpdate = {
@@ -146,7 +148,7 @@ export async function PUT(
         ...dataToUpdate,
         ingredients: {
           deleteMany: {},
-          create: body.ingredients.map((ing: any, index: number) => ({
+          create: body.ingredients.map((ing: IngredientInput, index: number) => ({
             amount: ing.amount, 
             unit: ing.unit, 
             item: ing.item, 
@@ -157,7 +159,7 @@ export async function PUT(
         },
         instructions: {
           deleteMany: {},
-          create: body.instructions.map((inst: any, index: number) => ({
+          create: body.instructions.map((inst: InstructionInput, index: number) => ({
             step: index + 1, 
             title: inst.title, 
             description: inst.description, 

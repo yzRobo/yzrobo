@@ -1,7 +1,9 @@
 // app/api/projects/[slug]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { put } from '@vercel/blob';
+import type { ProjectTechnologyInput, ProjectFeatureInput } from '@/types/project';
 
 // GET /api/projects/[slug] - Get a single project
 export async function GET(
@@ -51,7 +53,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
 
-    const dataToUpdate: any = {};
+    const dataToUpdate: Prisma.ProjectUpdateInput = {};
 
     // Handle hero image update
     if (body.heroImage && body.heroImage.startsWith('data:')) {
@@ -85,7 +87,7 @@ export async function PUT(
         ...dataToUpdate,
         technologies: {
           deleteMany: {},
-          create: body.technologies?.map((tech: any, index: number) => ({
+          create: body.technologies?.map((tech: ProjectTechnologyInput, index: number) => ({
             name: tech.name,
             icon: tech.icon,
             category: tech.category,
@@ -94,7 +96,7 @@ export async function PUT(
         },
         features: {
           deleteMany: {},
-          create: body.features?.map((feature: any, index: number) => ({
+          create: body.features?.map((feature: ProjectFeatureInput, index: number) => ({
             title: feature.title,
             description: feature.description,
             order: index,

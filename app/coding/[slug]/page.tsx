@@ -23,7 +23,7 @@ import Navigation from '../../components/Navigation';
 import { PageLoadingSpinner } from '../../components/LoadingStates';
 import { useParams, useRouter, notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
-import type { Project } from '@/types/project';
+import type { Project, ProjectImage } from '@/types/project';
 
 // Tech icon mapping (same as main page)
 const techIcons: { [key: string]: React.ReactNode } = {
@@ -56,7 +56,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 // Image Gallery Component
-const ImageGallery = ({ images }: { images: any[] }) => {
+const ImageGallery = ({ images }: { images: ProjectImage[] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   if (!images || images.length === 0) return null;

@@ -109,28 +109,28 @@ export default function AdminDashboard() {
     try {
       // Fetch recipe stats
       const recipesRes = await fetch('/api/recipes?all=true');
-      const recipes = await recipesRes.json();
-      
+      const recipes: { published: boolean }[] = await recipesRes.json();
+
       // Fetch vehicle stats
       const vehiclesRes = await fetch('/api/vehicles');
-      const vehicles = await vehiclesRes.json();
-      
+      const vehicles: { blogPosts?: unknown[] }[] = await vehiclesRes.json();
+
       // Fetch project stats
       const projectsRes = await fetch('/api/projects?all=true');
-      const projects = await projectsRes.json();
-      
+      const projects: { published: boolean }[] = await projectsRes.json();
+
       setStats({
         recipes: {
           total: recipes.length,
-          published: recipes.filter((r: any) => r.published).length
+          published: recipes.filter((r) => r.published).length
         },
         vehicles: {
           total: vehicles.length,
-          posts: vehicles.reduce((acc: number, v: any) => acc + (v.blogPosts?.length || 0), 0)
+          posts: vehicles.reduce((acc: number, v) => acc + (v.blogPosts?.length || 0), 0)
         },
         projects: {
           total: projects.length,
-          published: projects.filter((p: any) => p.published).length
+          published: projects.filter((p) => p.published).length
         }
       });
     } catch (error) {

@@ -59,9 +59,9 @@ export async function GET(request: NextRequest) {
     });
 
     // Calculate ratings
-    const recipesWithRating = recipes.map((recipe: any) => {
+    const recipesWithRating = recipes.map((recipe) => {
       const avgRating = recipe.reviews.length > 0
-        ? recipe.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / recipe.reviews.length
+        ? recipe.reviews.reduce((sum, r) => sum + r.rating, 0) / recipe.reviews.length
         : 0;
       
       return {

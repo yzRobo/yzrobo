@@ -98,8 +98,8 @@ const RecipeForm = ({ onClose, editingRecipe }: { onClose: () => void; editingRe
         difficulty: editingRecipe?.difficulty || 'medium',
         ingredients: editingRecipe?.ingredients?.length ? [...editingRecipe.ingredients] : [{ amount: '', unit: '', item: '', notes: '' }],
         instructions: editingRecipe?.instructions?.length ? [...editingRecipe.instructions] : [{ step: 1, title: '', description: '' }],
-        tips: editingRecipe?.tips?.length ? editingRecipe.tips.map((tip: any) => tip.content) : [''],
-        tags: editingRecipe?.tags?.map((tag: any) => tag.name) || [],
+        tips: editingRecipe?.tips?.length ? editingRecipe.tips.map((tip) => tip.content) : [''],
+        tags: editingRecipe?.tags?.map((tag) => tag.name) || [],
         featured: editingRecipe?.featured || false,
         published: editingRecipe?.published || false,
         thumbnailDisplay: editingRecipe?.thumbnailDisplay || ThumbnailDisplay.HERO,
@@ -159,12 +159,12 @@ const RecipeForm = ({ onClose, editingRecipe }: { onClose: () => void; editingRe
         setSaving(true);
         try {
             const totalTime = `${parseInt(formData.prepTime || '0') + parseInt(formData.cookTime || '0')}`;
-            const payload: any = {
+            const payload = {
                 ...formData,
                 totalTime,
                 servings: parseInt(formData.servings),
-                ingredients: formData.ingredients.filter((i: any) => i.item),
-                instructions: formData.instructions.filter((i: any) => i.description),
+                ingredients: formData.ingredients.filter((i) => i.item),
+                instructions: formData.instructions.filter((i) => i.description),
                 tips: formData.tips.filter(Boolean),
                 heroImage: heroImagePreview,
                 ingredientsImage: ingredientsImagePreview,
@@ -312,7 +312,7 @@ const RecipeForm = ({ onClose, editingRecipe }: { onClose: () => void; editingRe
                     
                     <div>
                         <label className="block text-sm font-medium mb-2">Ingredients</label>
-                        {formData.ingredients.map((ingredient: any, index: number) => (
+                        {formData.ingredients.map((ingredient, index) => (
                             <div key={index} className="flex gap-2 mb-2 items-center">
                                 <input type="text" placeholder="Amount" value={ingredient.amount} onChange={(e) => { const newIngredients = [...formData.ingredients]; newIngredients[index].amount = e.target.value; setFormData({ ...formData, ingredients: newIngredients }); }} className="w-24 px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" />
                                 <input type="text" placeholder="Item" value={ingredient.item} onChange={(e) => { const newIngredients = [...formData.ingredients]; newIngredients[index].item = e.target.value; setFormData({ ...formData, ingredients: newIngredients }); }} className="flex-1 px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" />
@@ -324,7 +324,7 @@ const RecipeForm = ({ onClose, editingRecipe }: { onClose: () => void; editingRe
 
                     <div>
                         <label className="block text-sm font-medium mb-2">Instructions</label>
-                        {formData.instructions.map((instruction: any, index: number) => (
+                        {formData.instructions.map((instruction, index) => (
                             <div key={index} className="relative mb-3 pl-8">
                                 <span className="absolute left-0 top-2.5 font-bold text-gray-500">{instruction.step}.</span>
                                 <input type="text" placeholder="Step Title (optional)" value={instruction.title} onChange={(e) => { const newInstructions = [...formData.instructions]; newInstructions[index].title = e.target.value; setFormData({ ...formData, instructions: newInstructions }); }} className="w-full mb-2 px-3 py-2 bg-black/50 border border-white/10 rounded-lg focus:border-[var(--accent-primary)] focus:outline-none" />
@@ -671,7 +671,7 @@ export default function RecipeAdminPage() {
                                         <div className="min-w-0">
                                             <h3 className="text-lg font-semibold truncate">{recipe.title}</h3>
                                             <div className="flex flex-wrap gap-1 mt-2">
-                                                {recipe.tags?.map((tag: any) => (
+                                                {recipe.tags?.map((tag) => (
                                                     <span key={tag.id} className="px-2 py-0.5 bg-white/10 text-xs rounded-full">{tag.name}</span>
                                                 ))}
                                             </div>

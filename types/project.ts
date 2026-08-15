@@ -1,5 +1,18 @@
 // types/project.ts
 
+// Shapes accepted from request bodies when creating/updating a project.
+// `order` is assigned server-side from the array index, so it is absent here.
+export interface ProjectTechnologyInput {
+  name: string;
+  icon?: string | null;
+  category?: string | null;
+}
+
+export interface ProjectFeatureInput {
+  title: string;
+  description: string;
+}
+
 export interface Project {
     id: string;
     slug: string;

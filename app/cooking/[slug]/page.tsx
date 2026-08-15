@@ -18,7 +18,7 @@ import {
 } from 'react-icons/fa';
 import Navigation from '../../components/Navigation';
 import NutritionDisplay from '../../components/NutritionDisplay';
-import { Recipe } from '@/types/recipe';
+import { Recipe, Ingredient, Instruction } from '@/types/recipe';
 import { PageLoadingSpinner } from '../../components/LoadingStates';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import { formatCookingTime } from '@/lib/utils/timeFormatting';
@@ -26,7 +26,7 @@ import ReactMarkdown from 'react-markdown';
 import { useContentTracking } from '../../hooks/useAnalytics';
 
 // Ingredient Item Component with divider
-const IngredientItem = ({ ingredient, index, isLast }: { ingredient: any; index: number; isLast: boolean }) => (
+const IngredientItem = ({ ingredient, index, isLast }: { ingredient: Ingredient; index: number; isLast: boolean }) => (
   <>
     <motion.li
       initial={{ opacity: 0, x: -20 }}
@@ -49,7 +49,7 @@ const IngredientItem = ({ ingredient, index, isLast }: { ingredient: any; index:
 );
 
 // Instruction Step Component with divider
-const InstructionStep = ({ instruction, index, isLast }: { instruction: any; index: number; isLast: boolean }) => (
+const InstructionStep = ({ instruction, index, isLast }: { instruction: Instruction; index: number; isLast: boolean }) => (
   <>
     <motion.div
       initial={{ opacity: 0, y: 20 }}
